@@ -60,8 +60,8 @@ all: main-build
 main-build: STM32L432KC\ Application.elf secondary-outputs
 
 # Tool invocations
-STM32L432KC\ Application.elf STM32L432KC\ Application.map: $(OBJS) $(USER_OBJS) C:\_Projects\CAN_J1939\ Arduino\ Project\stm32l4_j1939_project\stm32l4_j1939_application\STM32L432KCUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "STM32L432KC Application.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\_Projects\CAN_J1939 Arduino Project\stm32l4_j1939_project\stm32l4_j1939_application\STM32L432KCUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STM32L432KC Application.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+STM32L432KC\ Application.elf STM32L432KC\ Application.map: $(OBJS) $(USER_OBJS) C:\_Projects\CAN_J1939\ Tech\ Track\ Project\j1939_tech_track_project\stm32l4_j1939_application\STM32L432KCUX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "STM32L432KC Application.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\_Projects\CAN_J1939 Tech Track Project\j1939_tech_track_project\stm32l4_j1939_application\STM32L432KCUX_FLASH.ld" --specs=nosys.specs -Wl,-Map="STM32L432KC Application.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

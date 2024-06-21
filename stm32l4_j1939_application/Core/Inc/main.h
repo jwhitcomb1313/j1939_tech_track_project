@@ -28,7 +28,7 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32l4xx_hal.h"
-
+#include <stdint.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -71,7 +71,8 @@ void Error_Handler(void);
 #define SP1_CS_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-
+extern SPI_HandleTypeDef hspi1;
+extern UART_HandleTypeDef huart1; 
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
