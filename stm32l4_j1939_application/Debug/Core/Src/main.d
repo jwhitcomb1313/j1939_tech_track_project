@@ -26,7 +26,8 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h \
- ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h
+ ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h \
+ ../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l432xx.h
 ../Core/Inc/main.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h:
 ../Core/Inc/stm32l4xx_hal_conf.h:
@@ -56,3 +57,4 @@ Core/Src/main.o: ../Core/Src/main.c ../Core/Inc/main.h \
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_spi_ex.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h:
+../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l432xx.h:

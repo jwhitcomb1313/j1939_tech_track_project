@@ -60,8 +60,8 @@
 #define MCP2515_RXF5SIDL	0x19
 #define MCP2515_RXF5EID8	0x1A
 #define MCP2515_RXF5EID0	0x1B
-#define MCP2515_TEC		0x1C
-#define MCP2515_REC		0x1D
+#define MCP2515_TEC		    0x1C
+#define MCP2515_REC		    0x1D
 
 #define MCP2515_RXM0SIDH	0x20
 #define MCP2515_RXM0SIDL	0x21
@@ -98,7 +98,8 @@
 /******************************************************/
 /********************Prototypes************************/
 /******************************************************/
+void MCP2515_Init(void); 
 void MCP2515_WriteByte(uint8_t data, uint8_t address, uint8_t size);
-void MCP2515_WriteByteSequence(uint8_t data, uint8_t address, uint8_t size);
+void MCP2515_WriteByteSequence(uint8_t* data, uint8_t address, uint8_t size);
 uint8_t MCP2515_ReadByte(uint8_t address); 
 void MCP2515_ReadByteSequence(uint8_t instruction, uint8_t address, uint8_t* data, uint8_t length); 

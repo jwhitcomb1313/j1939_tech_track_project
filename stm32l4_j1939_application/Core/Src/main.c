@@ -18,7 +18,10 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-
+#include "stm32l432xx.h"
+#include "stm32l4xx_hal_rcc.h"
+#include <stdint.h>
+#include <stdio.h>
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
@@ -94,15 +97,18 @@ int main(void)
   MX_SPI1_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
-
+  printf("testing uart coms"); 
   /* USER CODE END 2 */
-
+  int var = 0; 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
     /* USER CODE END WHILE */
-
+    printf("var");
+    HAL_UART_Transmit(&huart1, var, sizeof(var), 100); 
+    var++; 
+    HAL_Delay(1000); 
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */

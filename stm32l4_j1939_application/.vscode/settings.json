@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "main.h": "c",
-        "mcp2515.h": "c"
+        "mcp2515.h": "c",
+        "stm32l4xx_hal_rcc.h": "c"
     }
 }
