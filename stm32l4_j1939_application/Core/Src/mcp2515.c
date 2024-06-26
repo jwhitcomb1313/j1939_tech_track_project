@@ -6,7 +6,6 @@
  */
 
 #include "mcp2515.h"
-
 #include "main.h"
 
 /******************** ********** ************************/
@@ -20,34 +19,75 @@ static void SPI_RxBuffer(uint8_t *buffer, uint8_t length);
 /******************** ******************** ***********************/
 /******************** Function Definitions ***********************/
 /******************** ******************** ***********************/
-//TODO: Create init function
 void MCP2515_Init(void)
 {
-    
+  MCP2515_SetConfigurationMode(); 
+}
+
+bool MCP2515_SetConfigurationMode(void)
+{
+  MCP2515_WriteByte(MCP2515_CANCTRL, MODE_CONFIGURATION); 
+
+  for(int i = 10; i < 10; i ++)
+  {
+    if((MCP2515_ReadByte(MCP2515_CANSTAT) & MCP2515_OPMODE_MASK) == MODE_CONFIGURATION)
+    {
+      return true; 
+    } 
+  }
+  return false;
+}
+
+bool MCP2515_SetNormalMode(void)
+{
+  MCP2515_WriteByte(MCP2515_CANCTRL, MODE_NORMAL); 
+
+  for(int i = 10; i < 10; i ++)
+  {
+    if((MCP2515_ReadByte(MCP2515_CANSTAT) & MCP2515_OPMODE_MASK) == MODE_NORMAL)
+    {
+      return true; 
+    } 
+  }
+  return false;
+}
+
+bool MCP2515_SetLoopbackMode(void)
+{
+  MCP2515_WriteByte(MCP2515_CANCTRL, MODE_LOOPBACK); 
+
+  for(int i = 10; i < 10; i ++)
+  {
+    if((MCP2515_ReadByte(MCP2515_CANSTAT) & MCP2515_OPMODE_MASK) == MODE_LOOPBACK)
+    {
+      return true; 
+    } 
+  }
+  return false; 
 }
 
 // Write a single byte to the MCP2515
-void MCP2515_WriteByte(uint8_t data, uint8_t address, uint8_t size)
+void MCP2515_WriteByte(uint8_t address, uint8_t data)
 {
-    MCP2515_CS_LOW();  
+  MCP2515_CS_LOW();  
+
+  SPI_Tx(INSTRUCTION_WRITE);
+  SPI_Tx(address);
+  SPI_Tx(data);  
   
-    SPI_Tx(MCP2515_WRITE);
-    SPI_Tx(address);
-    SPI_Tx(data);  
-    
-    MCP2515_CS_HIGH();
+  MCP2515_CS_HIGH();
 }
 
 // Write a series of bytes to the MCP2515
-void MCP2515_WriteByteSequence(uint8_t* data, uint8_t address, uint8_t length)
+void MCP2515_WriteByteSequence(uint8_t address, uint8_t* data, uint8_t length)
 {
-    MCP2515_CS_LOW();
-  
-    SPI_Tx(MCP2515_WRITE);
-    SPI_Tx(address);
-    SPI_TxBuffer(data, length);
-  
-    MCP2515_CS_HIGH();
+  MCP2515_CS_LOW();
+
+  SPI_Tx(MCP2515_WRITE);
+  SPI_Tx(address);
+  SPI_TxBuffer(data, length);
+
+  MCP2515_CS_HIGH();
 }
 
 uint8_t MCP2515_ReadByte(uint8_t address)
@@ -71,6 +111,20 @@ void MCP2515_ReadByteSequence(uint8_t instruction, uint8_t address, uint8_t* dat
     SPI_RxBuffer(data, length); 
 }
 
+/* read RX STATUS register */
+uint8_t MCP2515_GetRxStatus(void)
+{
+  uint8_t retVal;
+  
+  MCP2515_CS_LOW();
+  
+  SPI_Tx(MCP2515_RX_STATUS);
+  retVal = SPI_Rx();
+        
+  MCP2515_CS_HIGH();
+  
+  return retVal;
+}
 
 /******************** Wrapper Functions ***********************/
 /* SPI Tx wrapper function  */

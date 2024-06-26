@@ -7,6 +7,7 @@
 
 #include "main.h"
 #include "stm32l432xx.h"
+#include <stdbool.h>
 /* MCP2515 SPI Instruction Set */
 #define MCP2515_RESET           0xC0
 
@@ -91,15 +92,58 @@
 #define MSG_IN_RXB1             0x02
 #define MSG_IN_BOTH_BUFFERS     0x03
 
+
 #define MCP2515_CS_HIGH()   HAL_GPIO_WritePin(SP1_CS_GPIO_Port, SP1_CS_Pin, GPIO_PIN_SET)
 #define MCP2515_CS_LOW()    HAL_GPIO_WritePin(SP1_CS_GPIO_Port, SP1_CS_Pin, GPIO_PIN_RESET)
 #define SPI_TIMEOUT 100
 
-/******************************************************/
-/********************Prototypes************************/
-/******************************************************/
+#define MCP2515_OPMODE_MASK   0XE0
+
+/******************* ********** ***********************/
+/*******************    Enums   ***********************/
+/******************* ********** ***********************/
+typedef enum 
+{
+    SPI_MCP2515_OK,
+    SPI_MCP2515_ERROR
+}spi_mcp2515_t; 
+
+typedef enum 
+{
+    MODE_NORMAL = 0x00,
+    MODE_LOOPBACK = 0x40,
+    MODE_CONFIGURATION = 0x80,
+}mcp2515_mode_of_operation_t;
+ 
+typedef enum
+{
+    INSTRUCTION_WRITE       = 0x02,
+    INSTRUCTION_READ        = 0x03,
+    INSTRUCTION_BITMOD      = 0x05,
+    INSTRUCTION_LOAD_TX0    = 0x40,
+    INSTRUCTION_LOAD_TX1    = 0x42,
+    INSTRUCTION_LOAD_TX2    = 0x44,
+    INSTRUCTION_RTS_TX0     = 0x81,
+    INSTRUCTION_RTS_TX1     = 0x82,
+    INSTRUCTION_RTS_TX2     = 0x84,
+    INSTRUCTION_RTS_ALL     = 0x87,
+    INSTRUCTION_READ_RX0    = 0x90,
+    INSTRUCTION_READ_RX1    = 0x94,
+    INSTRUCTION_READ_STATUS = 0xA0,
+    INSTRUCTION_RX_STATUS   = 0xB0,
+    INSTRUCTION_RESET       = 0xC0
+}mcp2515_instruction_t;
+
+/******************* ********** ***********************/
+/******************* Prototypes ***********************/
+/******************* ********** ***********************/
 void MCP2515_Init(void); 
-void MCP2515_WriteByte(uint8_t data, uint8_t address, uint8_t size);
-void MCP2515_WriteByteSequence(uint8_t* data, uint8_t address, uint8_t size);
+void MCP2515_WriteByte(uint8_t address, uint8_t data);
+void MCP2515_WriteByteSequence(uint8_t address, uint8_t* data, uint8_t length);
 uint8_t MCP2515_ReadByte(uint8_t address); 
 void MCP2515_ReadByteSequence(uint8_t instruction, uint8_t address, uint8_t* data, uint8_t length); 
+uint8_t MCP2515_GetRxStatus(void); 
+bool MCP2515_SetConfigurationMode(void);
+bool MCP2515_SetNormalMode(void); 
+bool MCP2515_SetLoopbackMode(void); 
+
