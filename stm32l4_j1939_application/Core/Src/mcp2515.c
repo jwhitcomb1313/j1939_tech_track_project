@@ -132,6 +132,30 @@ void MCP2515_WriteByte(uint8_t address, uint8_t data)
 
 /******************************************************************************/
 /*!
+   \fn      void MCP2515_WriteMultipleBytes(uint8_t address, uint8_t data)
+   \brief   This function writes a multiple bytes to a register at the selected adddress
+            and continue writing for the length indicated 
+   \param   uint8_t address: address to write the byte 
+   \param   uint8_t data: byte that is to be written
+   \param   uint8_t length: number of bytes to be written
+   \return   None
+
+    @{
+*/
+/******************************************************************************/
+void MCP2515_WriteMultipleByte(uint8_t address, uint8_t* data, uint8_t length)
+{
+  MCP2515_CS_LOW();  
+
+  SPI_Tx((uint8_t)INSTRUCTION_WRITE);
+  SPI_Tx(address);
+  SPI_TxBuffer(data, length);  
+  
+  MCP2515_CS_HIGH();
+}
+
+/******************************************************************************/
+/*!
    \fn      void MCP2515_WriteTxBuffer(tx_buffer_instruct_t instruction, uint8_t* data, uint8_t length)
    \brief   This function loads data into one of the tx buffers, overhead is reduced by includeing the 
             instruction into the address. 
@@ -181,6 +205,28 @@ uint8_t MCP2515_ReadByte(uint8_t address)
 
 /******************************************************************************/
 /*!
+   \fn      uint8_t MCP2515_ReadMultipleBytes(uint8_t address)
+   \brief   This function reads a single byte from a register at the selected adddress 
+   \param   uint8_t address: address to read the byte 
+   \return  uint8_t retVal: byte at the given address
+
+    @{
+*/
+/******************************************************************************/
+void MCP2515_ReadMultipleBytes(uint8_t address, uint8_t* data, uint8_t length)
+{
+
+    MCP2515_CS_LOW();
+  
+    SPI_Tx((uint8_t)INSTRUCTION_READ);
+    SPI_Tx(address);
+    SPI_RxBuffer(data, length); 
+  
+    MCP2515_CS_HIGH();
+}
+
+/******************************************************************************/
+/*!
    \fn      void MCP2515_ReadRxBuffer(rx_buffer_instruct_t instruction, uint8_t* data, uint8_t length)
    \brief   This function reads data from one of the rx buffers, overhead is reduced by includeing the 
             instruction into the address. 
@@ -195,8 +241,12 @@ uint8_t MCP2515_ReadByte(uint8_t address)
 /******************************************************************************/
 void MCP2515_ReadRxBuffer(rx_buffer_instruct_t instruction, uint8_t* data, uint8_t length)
 {
+    MCP2515_CS_LOW();
+
     SPI_Tx(instruction); 
     SPI_RxBuffer(data, length); 
+
+    MCP2515_CS_HIGH();
 }
 
 /******************************************************************************/

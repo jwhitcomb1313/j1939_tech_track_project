@@ -235,13 +235,22 @@ typedef enum
 /******************* ********** ***********************/
 /******************* Prototypes ***********************/
 /******************* ********** ***********************/
+/**  Init/Mode functions **/
 void MCP2515_Init(void); 
-void MCP2515_WriteByte(uint8_t address, uint8_t data);
-void MCP2515_WriteTxBuffer(tx_buffer_instruct_t instruction, uint8_t* data, uint8_t length);
-uint8_t MCP2515_ReadByte(uint8_t address); 
-void MCP2515_ReadRxBuffer(rx_buffer_instruct_t instruction, uint8_t address, uint8_t* data, uint8_t length); 
-uint8_t MCP2515_GetRxStatus(void); 
 bool MCP2515_SetConfigurationMode(void);
 bool MCP2515_SetNormalMode(void); 
-bool MCP2515_SetLoopbackMode(void); 
+bool MCP2515_SetLoopbackMode(void);
+/**  Write functions **/
+void MCP2515_WriteByte(uint8_t address, uint8_t data);
+void MCP2515_WriteMultipleByte(uint8_t address, uint8_t* data, uint8_t length); 
+void MCP2515_WriteTxBuffer(tx_buffer_instruct_t instruction, uint8_t* data, uint8_t length);
+/**  Read functions **/
+uint8_t MCP2515_ReadByte(uint8_t address); 
+void MCP2515_ReadMultipleBytes(uint8_t address, uint8_t* data, uint8_t length); 
+void MCP2515_ReadRxBuffer(rx_buffer_instruct_t instruction, uint8_t* data, uint8_t length);
+/**  Status functions **/
+uint8_t MCP2515_GetRxStatus(void); 
+uint8_t MCP2515_GetReadStatus(void); 
+
+ 
 
