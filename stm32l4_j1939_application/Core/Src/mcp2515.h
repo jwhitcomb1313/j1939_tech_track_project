@@ -223,15 +223,39 @@ typedef enum
     TX_BUF_TXB1DATA = 0x46,
     TX_BUF_TXB2SIDH = 0x51,
     TX_BUF_TXB2DATA = 0x56,
-}tx_buffer_instruct_t; 
+}load_tx_buf_instr_t; 
 
 typedef enum
 {
-    RX_BUF_RXB0SIDH = 0x61,
-    RX_BUF_RXB0DATA = 0x66,
-    RX_BUF_RXB1SIDH = 0x71,
+    RX_BUF_RXB0SIDH     = 0x61,
+    RX_BUF_RXB0DATA     = 0x66,
+    RX_BUF_RXB1SIDH     = 0x71,
     RX_BUF_MCP_RXB1DATA = 0x76
-}rx_buffer_instruct_t; 
+}read_rx_buf_instr_t; 
+
+typedef union{
+  struct{
+    unsigned RX0IF      : 1; // 0: CANINTF[0]
+    unsigned RX1IF      : 1; // 1: CANINTF[1]
+    unsigned TXB0REQ    : 1; // 2: TXB0CNTRL[3]
+    unsigned TX0IF      : 1; // 3: CANINTF[2]
+    unsigned TXB1REQ    : 1; // 4: TXB1CNTRL[3]
+    unsigned TX1IF      : 1; // 5: CANINTF[3]
+    unsigned TXB2REQ    : 1; // 6: TXB2CNTRL[3]
+    unsigned TX2IF      : 1; // 7: CANINTF[4]
+  };
+  uint8_t ctrl_status;  
+}ctrl_status_t;
+
+typedef union{
+  struct{
+    unsigned filter     : 3;
+    unsigned msgType    : 2;
+    unsigned unusedBit  : 1;
+    unsigned rxBuffer   : 2;
+  };
+  uint8_t ctrl_rx_status;
+}ctrl_rx_status_t;
 /******************* ********** ***********************/
 /******************* Prototypes ***********************/
 /******************* ********** ***********************/
@@ -243,14 +267,14 @@ bool MCP2515_SetLoopbackMode(void);
 /**  Write functions **/
 void MCP2515_WriteByte(uint8_t address, uint8_t data);
 void MCP2515_WriteMultipleByte(uint8_t address, uint8_t* data, uint8_t length); 
-void MCP2515_WriteTxBuffer(tx_buffer_instruct_t instruction, uint8_t* data, uint8_t length);
+void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t* data, uint8_t length);
 /**  Read functions **/
 uint8_t MCP2515_ReadByte(uint8_t address); 
 void MCP2515_ReadMultipleBytes(uint8_t address, uint8_t* data, uint8_t length); 
-void MCP2515_ReadRxBuffer(rx_buffer_instruct_t instruction, uint8_t* data, uint8_t length);
+void MCP2515_ReadRxBuffer(read_rx_buf_instr_t instruction, uint8_t* data, uint8_t length);
 /**  Status functions **/
 uint8_t MCP2515_GetRxStatus(void); 
-uint8_t MCP2515_GetReadStatus(void); 
+uint8_t MCP2515_GetControlStatus(void); 
 
  
 

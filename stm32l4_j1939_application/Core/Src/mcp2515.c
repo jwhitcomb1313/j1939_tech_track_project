@@ -159,7 +159,7 @@ void MCP2515_WriteMultipleByte(uint8_t address, uint8_t* data, uint8_t length)
    \fn      void MCP2515_WriteTxBuffer(tx_buffer_instruct_t instruction, uint8_t* data, uint8_t length)
    \brief   This function loads data into one of the tx buffers, overhead is reduced by includeing the 
             instruction into the address. 
-   \param   tx_buffer_instruct_t instruction: This type is both the address and write buffer instruction with 
+   \param   load_tx_buf_instr_t instruction: This type is both the address and write buffer instruction with 
             6 possible instructions. This points to the ID or data adress of any of the 3 tx buffers
    \param   uint8_t* data: Pointer to the data that is to be written to the buffer  
    \param   uint8_t length: Length of the data  
@@ -168,7 +168,7 @@ void MCP2515_WriteMultipleByte(uint8_t address, uint8_t* data, uint8_t length)
     @{
 */
 /******************************************************************************/
-void MCP2515_WriteTxBuffer(tx_buffer_instruct_t instruction, uint8_t* data, uint8_t length)
+void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t* data, uint8_t length)
 {
   MCP2515_CS_LOW();
 
@@ -230,7 +230,7 @@ void MCP2515_ReadMultipleBytes(uint8_t address, uint8_t* data, uint8_t length)
    \fn      void MCP2515_ReadRxBuffer(rx_buffer_instruct_t instruction, uint8_t* data, uint8_t length)
    \brief   This function reads data from one of the rx buffers, overhead is reduced by includeing the 
             instruction into the address. 
-   \param   rx_buffer_instruct_t instruction: This type is both the address and read buffer instruction with 
+   \param   read_rx_buf_instr_t instruction: This type is both the address and read buffer instruction with 
             4 possible instructions. 
    \param   uint8_t* data: Pointer that the data will be written to  
    \param   uint8_t length: Length of the data  
@@ -239,7 +239,7 @@ void MCP2515_ReadMultipleBytes(uint8_t address, uint8_t* data, uint8_t length)
     @{
 */
 /******************************************************************************/
-void MCP2515_ReadRxBuffer(rx_buffer_instruct_t instruction, uint8_t* data, uint8_t length)
+void MCP2515_ReadRxBuffer(read_rx_buf_instr_t instruction, uint8_t* data, uint8_t length)
 {
     MCP2515_CS_LOW();
 
@@ -254,6 +254,12 @@ void MCP2515_ReadRxBuffer(rx_buffer_instruct_t instruction, uint8_t* data, uint8
    \fn      uint8_t MCP2515_GetRxStatus(void)
    \brief   This function is a quick polling command that indicates filter match 
             and message type (either standard, extended, and/or remote) of received message  
+            -------------------------
+            0-2: Filter Match [filter]
+            3-4: Message Type Received [msgType]
+              5: Unused bit
+            6-7: Received Message [rxBufStatus]
+            -------------------------
    \param   None. 
    \return  uint8_t retVal: Rx status byte
 
@@ -276,24 +282,27 @@ uint8_t MCP2515_GetRxStatus(void)
 
 /******************************************************************************/
 /*!
-   \fn      uint8_t MCP2515_GetReadStatus(void)
+   \fn      uint8_t MCP2515_GetControlStatus(void)
    \brief   This function is a quick polling command that reads several status bits 
             for transmit and receive functions 
-            7: TX2IF (CANINTF[4])
-            6: TXREQ (TXB2CNTRL[3])
-            5: TX1IF (CANINTF[3])
-            4: TXREQ (TXB1CNTRL[3])
-            3: TX0IF (CANINTF[2])
-            2: TXREQ (TXB0CNTRL[3])
+            (Read Status in datasheet)
+            -------------------------
+            0: RX0IF (CANINTF[0])
             1: RX1IF (CANINTF[1])
-            0: RX0IF (CANINTF[0]) 
+            2: TXREQ (TXB0CNTRL[3])
+            3: TX0IF (CANINTF[2])
+            4: TXREQ (TXB1CNTRL[3])
+            5: TX1IF (CANINTF[3])
+            6: TXREQ (TXB2CNTRL[3])
+            7: TX2IF (CANINTF[4])
+            -------------------------
    \param   None. 
-   \return  uint8_t retVal: Read status byte
+   \return  uint8_t retVal: Control Status byte
 
     @{
 */
 /******************************************************************************/
-uint8_t MCP2515_GetReadStatus(void)
+uint8_t MCP2515_GetControlStatus(void)
 {
   uint8_t retVal;
   
@@ -308,19 +317,48 @@ uint8_t MCP2515_GetReadStatus(void)
 }
 
 /******************** Wrapper Functions ***********************/
-/* SPI Tx wrapper function  */
+/******************************************************************************/
+/*!
+   \fn      static void SPI_Tx(uint8_t data)
+   \brief   This function is a wrapper that transmits a single byte using HAL_SPI
+   \param   uint8_t data: byte to send
+   \return  None.
+
+    @{
+*/
+/******************************************************************************/
 static void SPI_Tx(uint8_t data)
 {
   HAL_SPI_Transmit(&hspi1, &data, 1, SPI_TIMEOUT);    
 }
 
-/* SPI Tx wrapper function */
+/******************************************************************************/
+/*!
+   \fn      static void SPI_TxBuffer(uint8_t *buffer, uint8_t length)
+   \brief   This function is a wrapper that transmits multiple bytes using HAL_SPI
+   \param   uint8_t *buffer: pointer to a buffer of data to send
+   \param   uint8_t length: length of data to send
+   \return  None.
+
+    @{
+*/
+/******************************************************************************/
 static void SPI_TxBuffer(uint8_t *buffer, uint8_t length)
 {
   HAL_SPI_Transmit(&hspi1, buffer, length, SPI_TIMEOUT);    
 }
 
-/* SPI Rx wrapper function */
+/******************************************************************************/
+/*!
+   \fn      static uint8_t SPI_Rx(void)
+   \brief   This function is a wrapper that receives a byte of data
+            using HAL_SPI
+   \param   None.
+   \return  uint8_t retVal: a byte of data being received
+
+    @{
+*/
+/******************************************************************************/
 static uint8_t SPI_Rx(void)
 {
   uint8_t retVal;
@@ -328,7 +366,18 @@ static uint8_t SPI_Rx(void)
   return retVal;
 }
 
-/* SPI Rx wrapper function */
+/******************************************************************************/
+/*!
+   \fn      static void SPI_RxBuffer(uint8_t *buffer, uint8_t length)
+   \brief   This function is a wrapper that receives multiple bytes of data
+            using HAL_SPI
+   \param   uint8_t *buffer: pointer to a buffer to receive the data
+   \param   uint8_t length: length of data to receive
+   \return  None
+
+    @{
+*/
+/******************************************************************************/
 static void SPI_RxBuffer(uint8_t *buffer, uint8_t length)
 {
   HAL_SPI_Receive(&hspi1, buffer, length, SPI_TIMEOUT);
