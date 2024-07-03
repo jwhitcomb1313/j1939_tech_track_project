@@ -19,6 +19,8 @@
  #include <stdint.h>
  #include <string.h>
  #include "uart.h"
+ #include "can_spi.h"
+ #include "mcp2515.h"
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -63,7 +65,8 @@ static void MX_USART2_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
+ 
+  char test_buf[50];
 /* USER CODE END 0 */
 
 /**
@@ -98,10 +101,59 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+  sprintf(test_buf, "start\r\n ***********\r\n");
+  uart_serial_print((uint8_t*)test_buf, sizeof(test_buf)); 
+  MCP2515_CS_LOW(); 
+  if(!HAL_GPIO_ReadPin(SP1_CS_GPIO_Port, SP1_CS_Pin))
+  {
+      sprintf(test_buf, "pin_low\r\n"); 
+  }
+  else
+  {
+      sprintf(test_buf, "low_fail\r\n");
+  }
+  uart_serial_print((uint8_t*)test_buf, sizeof(test_buf)); 
+  MCP2515_CS_HIGH(); 
+  if(HAL_GPIO_ReadPin(SP1_CS_GPIO_Port, SP1_CS_Pin))
+  {
+      sprintf(test_buf, "pin_high\r\n"); 
+  }
+  else
+  {
+      sprintf(test_buf, "high_fail\r\n");
+  }
+  uart_serial_print((uint8_t*)test_buf, sizeof(test_buf));
+  if(canspi_Init())
+  {
+    sprintf(test_buf, "init success\r\n"); 
+    uart_serial_print((uint8_t*)test_buf, sizeof(test_buf)); 
+  } 
+  else
+  {
+    sprintf(test_buf, "init failed\r\n\n"); 
+    uart_serial_print((uint8_t*)test_buf, sizeof(test_buf));
+  }
+
+
+  can_msg_t tx_message;  
+  tx_message.frame.dlc = 2;  
+  tx_message.frame.canId.priority = 0; 
+  tx_message.frame.canId.edp = 0;
+  tx_message.frame.canId.dp = 1; 
+  tx_message.frame.canId.pdu_format = 0x18; 
+  tx_message.frame.canId.pdu_specific = 0xFE; 
+  tx_message.frame.canId.source_address = 0xFE; 
+  tx_message.frame.data0 = 0x1; 
+  tx_message.frame.data1 = 0x2; 
+
+  can_msg_t rx_message; 
+
+
+  char id_buf[20]; 
+  char data_buf[20];
 
 
 
-  char buffer[6];  
 
   /* USER CODE END 2 */
 
@@ -111,10 +163,21 @@ int main(void)
   {
      
 
-    sprintf(buffer, "1a2b3"); 
-    uart_serial_print((uint8_t*)buffer, sizeof(buffer)); 
-    // var++; 
-    HAL_Delay(1000); 
+    // sprintf(buffer, "1a2b3"); 
+    // uart_serial_print((uint8_t*)buffer, sizeof(buffer)); 
+
+    canspi_TransmitMessage(&tx_message); 
+    if(canspi_ReceiveMessage(&rx_message))
+    {
+      // uart_serial_print((uint8_t*)rx_message.array, sizeof(rx_message.array)); 
+      sprintf(id_buf, "ID: %x\r\n", rx_message.frame.canId.id); 
+      uart_serial_print((uint8_t*)id_buf, sizeof(id_buf)); 
+      sprintf(data_buf, "Data byte 0: %x ", rx_message.frame.data0); 
+      uart_serial_print((uint8_t*)data_buf, sizeof(data_buf)); 
+      sprintf(data_buf, "Data byte 1: %x\r\n", rx_message.frame.data1); 
+      uart_serial_print((uint8_t*)data_buf, sizeof(data_buf));
+    } 
+    // HAL_Delay(1000); 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -201,7 +264,7 @@ static void MX_SPI1_Init(void)
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_4BIT;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
@@ -211,7 +274,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
   hspi1.Init.CRCPolynomial = 7;
   hspi1.Init.CRCLength = SPI_CRC_LENGTH_DATASIZE;
-  hspi1.Init.NSSPMode = SPI_NSS_PULSE_ENABLE;
+  hspi1.Init.NSSPMode = SPI_NSS_PULSE_DISABLE;
   if (HAL_SPI_Init(&hspi1) != HAL_OK)
   {
     Error_Handler();

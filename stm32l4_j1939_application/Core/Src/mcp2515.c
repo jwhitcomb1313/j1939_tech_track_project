@@ -7,6 +7,12 @@
 
 #include "mcp2515.h"
 #include "main.h"
+#include "uart.h"
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
+char test[30];
+
 
 /******************** ********** ************************/
 /******************** Prototypes ************************/
@@ -30,9 +36,15 @@ static void SPI_RxBuffer(uint8_t *buffer, uint8_t length);
     @{
 */
 /******************************************************************************/
-void MCP2515_Init(void)
+bool MCP2515_Init(void)
 {
-  MCP2515_SetConfigurationMode(); 
+  MCP2515_CS_HIGH();
+
+  if(!MCP2515_SetLoopbackMode())
+  {
+    return false; 
+  }
+  return true; 
 }
 
 /******************************************************************************/
@@ -96,16 +108,23 @@ bool MCP2515_SetNormalMode(void)
 
 bool MCP2515_SetLoopbackMode(void)
 {
+  bool retVal = false; 
   MCP2515_WriteByte(MCP2515_CANCTRL, MODE_LOOPBACK); 
 
-  for(int i = 10; i < 10; i ++)
+  for(int i = 0; i < 10; i ++)
   {
+    sprintf(test, "i = %d\r\n", i); 
+    uart_serial_print((uint8_t*)test, sizeof(test));
     if((MCP2515_ReadByte(MCP2515_CANSTAT) & MCP2515_OPMODE_MASK) == MODE_LOOPBACK)
     {
-      return true; 
+      retVal = true; 
+      break;
     } 
   }
-  return false; 
+  uint8_t mode = (MCP2515_ReadByte(MCP2515_CANSTAT) & MCP2515_OPMODE_MASK);
+  sprintf(test, "mode = %x\r\n", mode); 
+  uart_serial_print((uint8_t*)test, sizeof(test)); 
+  return retVal; 
 }
 
 /******************************************************************************/
@@ -143,7 +162,7 @@ void MCP2515_WriteByte(uint8_t address, uint8_t data)
     @{
 */
 /******************************************************************************/
-void MCP2515_WriteMultipleByte(uint8_t address, uint8_t* data, uint8_t length)
+void MCP2515_WriteMultipleBytes(uint8_t address, uint8_t* data, uint8_t length)
 {
   MCP2515_CS_LOW();  
 
@@ -251,7 +270,7 @@ void MCP2515_ReadRxBuffer(read_rx_buf_instr_t instruction, uint8_t* data, uint8_
 
 /******************************************************************************/
 /*!
-   \fn      uint8_t MCP2515_GetRxStatus(void)
+   \fn      rx_status_t MCP2515_GetRxStatus(void)
    \brief   This function is a quick polling command that indicates filter match 
             and message type (either standard, extended, and/or remote) of received message  
             -------------------------
@@ -261,19 +280,19 @@ void MCP2515_ReadRxBuffer(read_rx_buf_instr_t instruction, uint8_t* data, uint8_
             6-7: Received Message [rxBufStatus]
             -------------------------
    \param   None. 
-   \return  uint8_t retVal: Rx status byte
+   \return  rx_status_t retVal: Rx status byte
 
     @{
 */
 /******************************************************************************/
-uint8_t MCP2515_GetRxStatus(void)
+rx_status_t MCP2515_GetRxStatus(void)
 {
-  uint8_t retVal;
+  rx_status_t retVal;
   
   MCP2515_CS_LOW();
   
   SPI_Tx(MCP2515_RX_STATUS);
-  retVal = SPI_Rx();
+  retVal.ctrl_rx_status = SPI_Rx();
         
   MCP2515_CS_HIGH();
   
@@ -282,7 +301,7 @@ uint8_t MCP2515_GetRxStatus(void)
 
 /******************************************************************************/
 /*!
-   \fn      uint8_t MCP2515_GetControlStatus(void)
+   \fn      ctrl_status_t MCP2515_GetControlStatus(void)
    \brief   This function is a quick polling command that reads several status bits 
             for transmit and receive functions 
             (Read Status in datasheet)
@@ -297,19 +316,19 @@ uint8_t MCP2515_GetRxStatus(void)
             7: TX2IF (CANINTF[4])
             -------------------------
    \param   None. 
-   \return  uint8_t retVal: Control Status byte
+   \return  ctrl_status_t retVal: Control Status byte
 
     @{
 */
 /******************************************************************************/
-uint8_t MCP2515_GetControlStatus(void)
+ctrl_status_t MCP2515_GetControlStatus(void)
 {
-  uint8_t retVal;
+  ctrl_status_t retVal;
   
   MCP2515_CS_LOW();
   
   SPI_Tx(MCP2515_READ_STATUS);
-  retVal = SPI_Rx();
+  retVal.ctrl_status = SPI_Rx();
         
   MCP2515_CS_HIGH();
   
@@ -329,7 +348,20 @@ uint8_t MCP2515_GetControlStatus(void)
 /******************************************************************************/
 static void SPI_Tx(uint8_t data)
 {
-  HAL_SPI_Transmit(&hspi1, &data, 1, SPI_TIMEOUT);    
+  uint8_t retval; 
+
+  retval = (uint8_t) HAL_SPI_Transmit(&hspi1, &data, 1, SPI_TIMEOUT);  
+
+  if(retval != 0)
+  {
+    sprintf(test, "hal write error = %x\r\n", retval); 
+    uart_serial_print((uint8_t*)test, sizeof(test)); 
+  }
+  else
+  {
+    sprintf(test, "hal write ok\r\n"); 
+    uart_serial_print((uint8_t*)test, sizeof(test));
+  }
 }
 
 /******************************************************************************/
@@ -362,7 +394,20 @@ static void SPI_TxBuffer(uint8_t *buffer, uint8_t length)
 static uint8_t SPI_Rx(void)
 {
   uint8_t retVal;
-  HAL_SPI_Receive(&hspi1, &retVal, 1, SPI_TIMEOUT);
+  uint8_t error; 
+  error = (uint8_t) HAL_SPI_Receive(&hspi1, &retVal, 1, SPI_TIMEOUT);
+
+  if(error != 0)
+  {
+    sprintf(test, "hal read error = %x\r\n", error); 
+    uart_serial_print((uint8_t*)test, sizeof(test)); 
+  }
+  else
+  {
+    sprintf(test, "hal read ok\r\n"); 
+    uart_serial_print((uint8_t*)test, sizeof(test));
+  }
+
   return retVal;
 }
 

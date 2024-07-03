@@ -2,6 +2,10 @@
     "files.associations": {
         "main.h": "c",
         "mcp2515.h": "c",
-        "stm32l4xx_hal_rcc.h": "c"
+        "stm32l4xx_hal_rcc.h": "c",
+        "stdint.h": "c",
+        "uart.h": "c",
+        "stdio.h": "c",
+        "string.h": "c"
     }
 }

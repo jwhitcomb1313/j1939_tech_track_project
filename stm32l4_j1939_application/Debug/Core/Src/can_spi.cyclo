@@ -1,0 +1,4 @@
+../Core/Src/can_spi.c:16:6:canspi_Init	2
+../Core/Src/can_spi.c:24:9:canspi_MessagesInBuffer	3
+../Core/Src/can_spi.c:44:9:canspi_TransmitMessage	4
+../Core/Src/can_spi.c:69:9:canspi_ReceiveMessage	4

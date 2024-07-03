@@ -95,7 +95,7 @@
 
 #define MCP2515_CS_HIGH()   HAL_GPIO_WritePin(SP1_CS_GPIO_Port, SP1_CS_Pin, GPIO_PIN_SET)
 #define MCP2515_CS_LOW()    HAL_GPIO_WritePin(SP1_CS_GPIO_Port, SP1_CS_Pin, GPIO_PIN_RESET)
-#define SPI_TIMEOUT 100
+#define SPI_TIMEOUT 200
 
 #define MCP2515_OPMODE_MASK   0XE0
 
@@ -233,8 +233,10 @@ typedef enum
     RX_BUF_MCP_RXB1DATA = 0x76
 }read_rx_buf_instr_t; 
 
-typedef union{
-  struct{
+typedef union
+{
+  struct
+  {
     unsigned RX0IF      : 1; // 0: CANINTF[0]
     unsigned RX1IF      : 1; // 1: CANINTF[1]
     unsigned TXB0REQ    : 1; // 2: TXB0CNTRL[3]
@@ -247,34 +249,66 @@ typedef union{
   uint8_t ctrl_status;  
 }ctrl_status_t;
 
-typedef union{
-  struct{
+typedef union
+{
+  struct
+  {
     unsigned filter     : 3;
     unsigned msgType    : 2;
     unsigned unusedBit  : 1;
     unsigned rxBuffer   : 2;
   };
   uint8_t ctrl_rx_status;
-}ctrl_rx_status_t;
+}rx_status_t;
+
+typedef union
+{
+  struct
+  {
+    uint8_t RXBnSIDH;
+    uint8_t RXBnSIDL;
+    uint8_t RXBnEID8;
+    uint8_t RXBnEID0;
+    uint8_t RXBnDLC;
+    uint8_t RXBnD0;
+    uint8_t RXBnD1;
+    uint8_t RXBnD2;
+    uint8_t RXBnD3;
+    uint8_t RXBnD4;
+    uint8_t RXBnD5;
+    uint8_t RXBnD6;
+    uint8_t RXBnD7;
+  };
+  uint8_t rx_reg_array[13];
+}rx_reg_t;
+
+typedef struct
+{
+  uint8_t tempSIDH;
+  uint8_t tempSIDL;
+  uint8_t tempEID8;
+  uint8_t tempEID0;
+}id_reg_t;
+
 /******************* ********** ***********************/
 /******************* Prototypes ***********************/
 /******************* ********** ***********************/
 /**  Init/Mode functions **/
-void MCP2515_Init(void); 
+bool MCP2515_Init(void); 
 bool MCP2515_SetConfigurationMode(void);
 bool MCP2515_SetNormalMode(void); 
 bool MCP2515_SetLoopbackMode(void);
 /**  Write functions **/
 void MCP2515_WriteByte(uint8_t address, uint8_t data);
-void MCP2515_WriteMultipleByte(uint8_t address, uint8_t* data, uint8_t length); 
+void MCP2515_WriteMultipleBytes(uint8_t address, uint8_t* data, uint8_t length); 
 void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t* data, uint8_t length);
 /**  Read functions **/
 uint8_t MCP2515_ReadByte(uint8_t address); 
 void MCP2515_ReadMultipleBytes(uint8_t address, uint8_t* data, uint8_t length); 
 void MCP2515_ReadRxBuffer(read_rx_buf_instr_t instruction, uint8_t* data, uint8_t length);
 /**  Status functions **/
-uint8_t MCP2515_GetRxStatus(void); 
-uint8_t MCP2515_GetControlStatus(void); 
+rx_status_t MCP2515_GetRxStatus(void); 
+ctrl_status_t MCP2515_GetControlStatus(void); 
 
  
 
