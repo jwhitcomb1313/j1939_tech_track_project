@@ -95,7 +95,7 @@
 
 #define MCP2515_CS_HIGH()   HAL_GPIO_WritePin(SP1_CS_GPIO_Port, SP1_CS_Pin, GPIO_PIN_SET)
 #define MCP2515_CS_LOW()    HAL_GPIO_WritePin(SP1_CS_GPIO_Port, SP1_CS_Pin, GPIO_PIN_RESET)
-#define SPI_TIMEOUT 200
+#define SPI_TIMEOUT 100
 
 #define MCP2515_OPMODE_MASK   0XE0
 
@@ -311,4 +311,4 @@ rx_status_t MCP2515_GetRxStatus(void);
 ctrl_status_t MCP2515_GetControlStatus(void); 
 
  
-
+void MCP_test_function(void);

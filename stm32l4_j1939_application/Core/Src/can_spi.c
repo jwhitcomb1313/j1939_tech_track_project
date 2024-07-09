@@ -74,7 +74,6 @@ uint8_t canspi_ReceiveMessage(can_msg_t *can_message)
   
   rxStatus = MCP2515_GetRxStatus();
   uint8_t tempRxStatus = (uint8_t)rxStatus.ctrl_rx_status; 
-  uart_serial_print(&tempRxStatus, sizeof(tempRxStatus)); 
   /* Check receive buffer */
   if (rxStatus.rxBuffer != 0)
   {

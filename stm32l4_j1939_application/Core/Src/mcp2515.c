@@ -12,7 +12,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 char test[30];
-
+uint8_t read_error; 
 
 /******************** ********** ************************/
 /******************** Prototypes ************************/
@@ -25,6 +25,38 @@ static void SPI_RxBuffer(uint8_t *buffer, uint8_t length);
 /******************** ******************** ***********************/
 /******************** Function Definitions ***********************/
 /******************** ******************** ***********************/
+
+void MCP_test_function(void)
+{ 
+  
+  uint8_t instruction = MCP2515_READ;
+  uint8_t address = MCP2515_CANCTRL; 
+  uint8_t read_data = 0xFF;
+  uint8_t read_error = 0xFF;
+
+  //step 1: set chip select low  
+  MCP2515_CS_LOW();
+  
+  //step 2: tell the chip I want to read a register
+  HAL_SPI_Transmit(&hspi1, &instruction, 1, SPI_TIMEOUT);
+  //step 3: tell it the location I want to read
+  HAL_SPI_Transmit(&hspi1, &address, 1, SPI_TIMEOUT);
+  //step 4: read the register
+  read_error = (uint8_t) HAL_SPI_Receive(&hspi1, &read_data, 1, 100);
+
+  //step 5: set the chip select high again
+  MCP2515_CS_HIGH(); 
+
+  // sprintf(test, "instruction = %x\r\n", (uint8_t)INSTRUCTION_READ); 
+  // uart_serial_print((uint8_t*)test, sizeof(test));
+  // sprintf(test, "address = %x\r\n", address); 
+  // uart_serial_print((uint8_t*)test, sizeof(test));
+  sprintf(test, "rxerr = %d\r\n", read_error); 
+  uart_serial_print((uint8_t*)test, sizeof(test));
+  // sprintf(test, "mode = %x\r\n\n", read_data); 
+  // uart_serial_print((uint8_t*)test, sizeof(test));
+
+}
 
 /******************************************************************************/
 /*!
@@ -113,17 +145,12 @@ bool MCP2515_SetLoopbackMode(void)
 
   for(int i = 0; i < 10; i ++)
   {
-    sprintf(test, "i = %d\r\n", i); 
-    uart_serial_print((uint8_t*)test, sizeof(test));
     if((MCP2515_ReadByte(MCP2515_CANSTAT) & MCP2515_OPMODE_MASK) == MODE_LOOPBACK)
     {
       retVal = true; 
       break;
     } 
   }
-  uint8_t mode = (MCP2515_ReadByte(MCP2515_CANSTAT) & MCP2515_OPMODE_MASK);
-  sprintf(test, "mode = %x\r\n", mode); 
-  uart_serial_print((uint8_t*)test, sizeof(test)); 
   return retVal; 
 }
 
@@ -347,21 +374,10 @@ ctrl_status_t MCP2515_GetControlStatus(void)
 */
 /******************************************************************************/
 static void SPI_Tx(uint8_t data)
-{
-  uint8_t retval; 
+{ 
 
-  retval = (uint8_t) HAL_SPI_Transmit(&hspi1, &data, 1, SPI_TIMEOUT);  
+  HAL_SPI_Transmit(&hspi1, &data, 1, SPI_TIMEOUT);  
 
-  if(retval != 0)
-  {
-    sprintf(test, "hal write error = %x\r\n", retval); 
-    uart_serial_print((uint8_t*)test, sizeof(test)); 
-  }
-  else
-  {
-    sprintf(test, "hal write ok\r\n"); 
-    uart_serial_print((uint8_t*)test, sizeof(test));
-  }
 }
 
 /******************************************************************************/
@@ -394,19 +410,8 @@ static void SPI_TxBuffer(uint8_t *buffer, uint8_t length)
 static uint8_t SPI_Rx(void)
 {
   uint8_t retVal;
-  uint8_t error; 
-  error = (uint8_t) HAL_SPI_Receive(&hspi1, &retVal, 1, SPI_TIMEOUT);
-
-  if(error != 0)
-  {
-    sprintf(test, "hal read error = %x\r\n", error); 
-    uart_serial_print((uint8_t*)test, sizeof(test)); 
-  }
-  else
-  {
-    sprintf(test, "hal read ok\r\n"); 
-    uart_serial_print((uint8_t*)test, sizeof(test));
-  }
+  
+  read_error = (uint8_t) HAL_SPI_Receive(&hspi1, &retVal, 1, SPI_TIMEOUT);
 
   return retVal;
 }

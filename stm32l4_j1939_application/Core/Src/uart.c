@@ -12,5 +12,5 @@
 
 void uart_serial_print(uint8_t* data, uint8_t size)
 {
-    HAL_UART_Transmit(&huart2, data, size, 300); 
+    HAL_UART_Transmit(&huart2, data, size, 50); 
 }
