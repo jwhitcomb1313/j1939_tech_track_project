@@ -53,7 +53,7 @@ UART_HandleTypeDef huart2;
 /* USER CODE BEGIN PV */
 char id_buf[20]; 
 char data_buf[20];
-char test[] = "test"; 
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -68,7 +68,7 @@ static void MX_USART2_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
  
-  char test_buf[50];
+  char id[] = "ID: "; 
 /* USER CODE END 0 */
 
 /**
@@ -106,21 +106,23 @@ int main(void)
   canspi_Init(); 
   
 
-  // can_msg_t tx_message;  
-  // tx_message.frame.dlc = 2;  
-  // tx_message.frame.canId.priority = 0; 
-  // tx_message.frame.canId.edp = 0;
-  // tx_message.frame.canId.dp = 1; 
-  // tx_message.frame.canId.pdu_format = 0x18; 
-  // tx_message.frame.canId.pdu_specific = 0xFE; 
-  // tx_message.frame.canId.source_address = 0xFE; 
-  // tx_message.frame.data0 = 0x1; 
-  // tx_message.frame.data1 = 0x2; 
+  can_msg_t tx_message;  
+  can_ext_id_t tx_id; 
+  
+  tx_id.frame.priority = 0; 
+  tx_id.frame.edp = 0;
+  tx_id.frame.dp = 1; 
+  tx_id.frame.pdu_format = 0x18; 
+  tx_id.frame.pdu_specific = 0xFE; 
+  tx_id.frame.source_address = 0xFE; 
 
+  tx_message.frame.dlc = 2;
+  tx_message.frame.data0 = 0x1; 
+  tx_message.frame.data1 = 0x2; 
 
+  // canspi_CanPrintFunction(tx_message); 
   // can_msg_t rx_message; 
-
-
+  
 
 
 

@@ -1,4 +1,7 @@
-../Core/Src/can_spi.c:25:6:canspi_Init	8	static
-../Core/Src/can_spi.c:33:9:canspi_MessagesInBuffer	16	static
-../Core/Src/can_spi.c:63:9:canspi_TransmitMessage	24	static
-../Core/Src/can_spi.c:101:9:canspi_ReceiveMessage	40	static
+../Core/Src/can_spi.c:26:6:canspi_Init	8	static
+../Core/Src/can_spi.c:34:9:canspi_MessagesInBuffer	16	static
+../Core/Src/can_spi.c:64:9:canspi_TransmitMessage	24	static
+../Core/Src/can_spi.c:102:9:canspi_ReceiveMessage	40	static
+../Core/Src/can_spi.c:140:6:canspi_ConvertRegToID	4	static
+../Core/Src/can_spi.c:145:6:canspi_ConvertIDToReg	16	static
+../Core/Src/can_spi.c:150:6:canspi_CanPrintFunction	80	static

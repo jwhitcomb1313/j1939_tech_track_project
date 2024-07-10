@@ -26,19 +26,19 @@ void uart_serial_print(uint8_t* data, uint8_t size)
     HAL_UART_Transmit(&huart2, data, size, 100);
 }
 
-/******************************************************************************/
-/*!
-   \fn      void uart_serialStringPrint(uint8_t* strValue, uint8_t* value, uint8_t size)
-   \brief   This function writes data to the serial port COM 6 
-   \param   uint8_t* strValue: Pointer to the string value that will be printed
-   \param   uint8_t* value: Pointer to the value that will be printed in the string 
-   \param   uint8_t size: Size of data to print
-   \return  None. 
+// /******************************************************************************/
+// /*!
+//    \fn      void uart_serialStringPrint(uint8_t* strValue, uint8_t* value, uint8_t size)
+//    \brief   This function writes data to the serial port COM 6 
+//    \param   uint8_t* strValue: Pointer to the string value that will be printed
+//    \param   uint8_t* value: Pointer to the value that will be printed in the string 
+//    \param   uint8_t size: Size of data to print
+//    \return  None. 
 
-    @{
-*/
-/******************************************************************************/
-// void uart_serialStringPrint(uint8_t* strValue, uint8_t* value, uint8_t size)
+//     @{
+// */
+// /******************************************************************************/
+// void uart_serialStringPrint(uint8_t* strValue, uint8_t value, uint8_t size, uint8_t size)
 // { 
 //     uint8_t data_array[50]; 
 //     if(size < 50)
@@ -49,11 +49,11 @@ void uart_serial_print(uint8_t* data, uint8_t size)
 //         }
 //         else if(strValue != 0)
 //         {
-//             sprintf(data_array, "%s\r\n", (char*)strValue); 
+//             sprintf(data_array, "%s\r\n", strValue); 
 //         }
 //         else if(value != 0)
 //         {
-//             sprintf(data_array, "= %u\r\n", strValue, value); 
+//             sprintf(data_array, "= %u\r\n", value); 
 //         }
 
 //         if(data_array[0] != 0)
@@ -63,8 +63,4 @@ void uart_serial_print(uint8_t* data, uint8_t size)
 //     }
 // }
 
-uint8_t* tempArray(void)
-{
-    uint8_t tempArray[30]; 
-    return tempArray; 
-}   
+  

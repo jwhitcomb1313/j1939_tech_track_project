@@ -11,6 +11,7 @@
 #include "uart.h"
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 
 /******************************************************************************/
 /*!
@@ -68,21 +69,21 @@ uint8_t canspi_TransmitMessage(can_msg_t *can_message)
     if(control_status.TXB0REQ != 1)
     {
         //Load data into the buffer
-        MCP2515_WriteTxBuffer(TX_BUF_TXB0SIDH, (uint8_t*)can_message->frame.canId.id, can_message->frame.dlc); 
+        MCP2515_WriteTxBuffer(TX_BUF_TXB0SIDH, (uint8_t*)can_message->frame.canId, can_message->frame.dlc); 
         retVal = 1; 
     }
 
     if(control_status.TXB1REQ != 1)
     {
         //Load data into the buffer
-        MCP2515_WriteTxBuffer(TX_BUF_TXB1SIDH, (uint8_t*)can_message->frame.canId.id, can_message->frame.dlc); 
+        MCP2515_WriteTxBuffer(TX_BUF_TXB1SIDH, (uint8_t*)can_message->frame.canId, can_message->frame.dlc); 
         retVal = 1; 
     }
 
     if(control_status.TXB2REQ != 1)
     {
         //Load data into the buffer
-        MCP2515_WriteTxBuffer(TX_BUF_TXB2SIDH, (uint8_t*)can_message->frame.canId.id, can_message->frame.dlc); 
+        MCP2515_WriteTxBuffer(TX_BUF_TXB2SIDH, (uint8_t*)can_message->frame.canId, can_message->frame.dlc); 
         retVal = 1; 
     }
     return retVal;
@@ -98,14 +99,14 @@ uint8_t canspi_TransmitMessage(can_msg_t *can_message)
     @{
 */
 /******************************************************************************/
-uint8_t canspi_ReceiveMessage(can_msg_t *can_message)
+uint8_t canspi_ReceiveMessage(can_msg_t *canMsg)
 {
   uint8_t retVal = 0;
   rx_reg_t rxReg;
   rx_status_t rxStatus;
   
   rxStatus = MCP2515_GetRxStatus();
-  uint8_t tempRxStatus = (uint8_t)rxStatus.ctrl_rx_status; 
+
   /* Check receive buffer */
   if (rxStatus.rxBuffer != 0)
   {
@@ -118,20 +119,60 @@ uint8_t canspi_ReceiveMessage(can_msg_t *can_message)
     {
       MCP2515_ReadRxBuffer(MCP2515_READ_RXB1SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
     }
-    
-    // uart_serial_print(rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array)); 
-    can_message->frame.canId.id = rxReg.RXBnSIDH;
-    can_message->frame.dlc      = rxReg.RXBnDLC;
-    can_message->frame.data0    = rxReg.RXBnD0;
-    can_message->frame.data1    = rxReg.RXBnD1;
-    can_message->frame.data2    = rxReg.RXBnD2;
-    can_message->frame.data3    = rxReg.RXBnD3;
-    can_message->frame.data4    = rxReg.RXBnD4;
-    can_message->frame.data5    = rxReg.RXBnD5;
-    can_message->frame.data6    = rxReg.RXBnD6;
-    can_message->frame.data7    = rxReg.RXBnD7;
+     
+    canMsg->frame.canId     = rxReg.RXBnSIDH;
+    canMsg->frame.dlc       = rxReg.RXBnDLC;
+    canMsg->frame.data0     = rxReg.RXBnD0;
+    canMsg->frame.data1     = rxReg.RXBnD1;
+    canMsg->frame.data2     = rxReg.RXBnD2;
+    canMsg->frame.data3     = rxReg.RXBnD3;
+    canMsg->frame.data4     = rxReg.RXBnD4;
+    canMsg->frame.data5     = rxReg.RXBnD5;
+    canMsg->frame.data6     = rxReg.RXBnD6;
+    canMsg->frame.data7     = rxReg.RXBnD7;
     
     retVal = 1;
   }
   return retVal; 
+}
+
+void canspi_ConvertRegToID(id_reg_t regId, can_ext_id_t *canId)
+{
+    uint8_t tempPduFormat = 0; 
+    uint8_t tempPduSpecific = 0;
+    uint8_t tempSourceAddr = 0; 
+    //
+    canId->frame.priority = ((regId.tempSIDL & ID_MASK_PRIORITY) >> 5); 
+    canId->frame.edp = (regId.tempSIDH & ID_MASK_EDP);
+    canId->frame.dp = ((regId.tempSIDH & ID_MASK_DP) >> 1);  
+
+    tempPduFormat = ((regId.tempSIDH & ID_MASK_PDU_FORM_UPPER) >> 2); 
+    tempPduFormat = ((regId.tempEID0 & ID_MASK_PDU_FORM_LOWER) | tempPduFormat); 
+    canId->frame.pdu_format = tempPduFormat; 
+
+    tempPduSpecific = ((regId.tempEID0 & ID_MASK_PDU_SPEC_UPPER) >> 2); 
+    tempPduSpecific = ((regId.tempEID8 & ID_MASK_PDU_SPEC_LOWER) | tempPduSpecific); 
+    canId->frame.pdu_specific = tempPduSpecific; 
+
+    tempSourceAddr = ((regId.tempEID8 & ID_MASK_SA_UPPER) >>2); 
+    tempSourceAddr = ((regId.tempSIDL & ID_MASK_SA_LOWER) | tempSourceAddr); 
+    canId->frame.source_address = tempSourceAddr;
+}
+
+void canspi_ConvertIDToReg(can_ext_id_t extId, id_reg_t *regId)
+{
+
+}
+
+void canspi_CanPrintFunction(can_msg_t canMsg)
+{
+    char printStr[30]; 
+    can_ext_id_t tempId;
+    tempId.id = canMsg.frame.canId; 
+
+
+    sprintf(printStr, "PGN = %u%u%u%u\r\n", tempId.frame.edp, tempId.frame.dp, 
+            tempId.frame.pdu_format, tempId.frame.pdu_specific); 
+    uart_serial_print((uint8_t*)printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr)); 
 }
