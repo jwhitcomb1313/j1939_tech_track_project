@@ -12,7 +12,16 @@
 #include <stdbool.h>
 #include <string.h>
 
- 
+/******************************************************************************/
+/*!
+   \fn      bool canspi_Init(void)
+   \brief   This function inits CAN  
+   \param   None
+   \return  None
+
+    @{
+*/
+/******************************************************************************/
 bool canspi_Init(void)
 {
     if(!MCP2515_Init())
@@ -41,31 +50,54 @@ uint8_t canspi_MessagesInBuffer(void)
     return messageCount; 
 }
 
+/******************************************************************************/
+/*!
+   \fn      uint8_t canspi_TransmitMessage(can_msg_t *can_message)
+   \brief   This function transmits CAN messages
+   \param   can_msg_t *can_message: Pointer to the CAN message to be sent
+   \return  uint8_t retVal: Returns true if the message was transmitted 
+
+    @{
+*/
+/******************************************************************************/
 uint8_t canspi_TransmitMessage(can_msg_t *can_message)
 {
-    uint8_t retVal = 1; 
+    uint8_t retVal = 0; 
     ctrl_status_t control_status = MCP2515_GetControlStatus (); 
 
     if(control_status.TXB0REQ != 1)
     {
         //Load data into the buffer
         MCP2515_WriteTxBuffer(TX_BUF_TXB0SIDH, (uint8_t*)can_message->frame.canId.id, can_message->frame.dlc); 
+        retVal = 1; 
     }
 
     if(control_status.TXB1REQ != 1)
     {
         //Load data into the buffer
         MCP2515_WriteTxBuffer(TX_BUF_TXB1SIDH, (uint8_t*)can_message->frame.canId.id, can_message->frame.dlc); 
+        retVal = 1; 
     }
 
     if(control_status.TXB2REQ != 1)
     {
         //Load data into the buffer
         MCP2515_WriteTxBuffer(TX_BUF_TXB2SIDH, (uint8_t*)can_message->frame.canId.id, can_message->frame.dlc); 
+        retVal = 1; 
     }
     return retVal;
 }    
 
+/******************************************************************************/
+/*!
+   \fn      uint8_t canspi_ReceiveMessage(can_msg_t *can_message)
+   \brief   This function receives CAN messages
+   \param   can_msg_t *can_message: Pointer to the CAN message to be received
+   \return  uint8_t retVal: Returns true if there is data in the buffer
+
+    @{
+*/
+/******************************************************************************/
 uint8_t canspi_ReceiveMessage(can_msg_t *can_message)
 {
   uint8_t retVal = 0;

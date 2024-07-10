@@ -51,7 +51,9 @@ SPI_HandleTypeDef hspi1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-
+char id_buf[20]; 
+char data_buf[20];
+char test[] = "test"; 
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -101,38 +103,9 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
-  // uart_serial_print((uint8_t*)test_buf, sizeof(test_buf)); 
-  // MCP2515_CS_LOW(); 
-  // if(!HAL_GPIO_ReadPin(SP1_CS_GPIO_Port, SP1_CS_Pin))
-  // {
-  //     sprintf(test_buf, "pin_low\r\n"); 
-  // }
-  // else
-  // {
-  //     sprintf(test_buf, "low_fail\r\n");
-  // }
-  // uart_serial_print((uint8_t*)test_buf, sizeof(test_buf)); 
-  // MCP2515_CS_HIGH(); 
-  // if(HAL_GPIO_ReadPin(SP1_CS_GPIO_Port, SP1_CS_Pin))
-  // {
-  //     sprintf(test_buf, "pin_high\r\n"); 
-  // }
-  // else
-  // {
-  //     sprintf(test_buf, "high_fail\r\n");
-  // }
-  // if(canspi_Init())
-  // {
-  //   sprintf(test_buf, "init success\r\n"); 
-  // } 
-  // else
-  // {
-  //   sprintf(test_buf, "init failed\r\n\n"); 
-  // }
-  // uart_serial_print((uint8_t*)test_buf, sizeof(test_buf));
-  MCP_test_function(); 
+  canspi_Init(); 
   
+
   // can_msg_t tx_message;  
   // tx_message.frame.dlc = 2;  
   // tx_message.frame.canId.priority = 0; 
@@ -144,11 +117,11 @@ int main(void)
   // tx_message.frame.data0 = 0x1; 
   // tx_message.frame.data1 = 0x2; 
 
+
   // can_msg_t rx_message; 
 
 
-  // char id_buf[20]; 
-  // char data_buf[20];
+
 
 
 
@@ -159,10 +132,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    // MCP_test_function(); 
 
-    // sprintf(buffer, "1a2b3"); 
-    // uart_serial_print((uint8_t*)buffer, sizeof(buffer)); 
 
     // canspi_TransmitMessage(&tx_message); 
     // if(canspi_ReceiveMessage(&rx_message))
@@ -170,9 +140,9 @@ int main(void)
     //   // uart_serial_print((uint8_t*)rx_message.array, sizeof(rx_message.array)); 
     //   sprintf(id_buf, "ID: %x\r\n", rx_message.frame.canId.id); 
     //   uart_serial_print((uint8_t*)id_buf, sizeof(id_buf)); 
-    //   sprintf(data_buf, "Data byte 0: %x ", rx_message.frame.data0); 
+    //   sprintf(data_buf, "Data byte 0: %x\r\n", rx_message.frame.data0); 
     //   uart_serial_print((uint8_t*)data_buf, sizeof(data_buf)); 
-    //   sprintf(data_buf, "Data byte 1: %x\r\n", rx_message.frame.data1); 
+    //   sprintf(data_buf, "Data byte 1: %x\r\n\n", rx_message.frame.data1); 
     //   uart_serial_print((uint8_t*)data_buf, sizeof(data_buf));
     // } 
     // HAL_Delay(1000); 
@@ -256,7 +226,7 @@ static void MX_SPI1_Init(void)
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
   hspi1.Init.Direction = SPI_DIRECTION_2LINES;
-  hspi1.Init.DataSize = SPI_DATASIZE_4BIT;
+  hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;

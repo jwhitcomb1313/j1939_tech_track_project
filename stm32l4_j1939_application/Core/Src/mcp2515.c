@@ -34,6 +34,9 @@ void MCP_test_function(void)
   uint8_t read_data = 0xFF;
   uint8_t read_error = 0xFF;
 
+
+
+
   //step 1: set chip select low  
   MCP2515_CS_LOW();
   
@@ -42,20 +45,22 @@ void MCP_test_function(void)
   //step 3: tell it the location I want to read
   HAL_SPI_Transmit(&hspi1, &address, 1, SPI_TIMEOUT);
   //step 4: read the register
-  read_error = (uint8_t) HAL_SPI_Receive(&hspi1, &read_data, 1, 100);
+  read_error = (uint8_t) HAL_SPI_Receive(&hspi1, &read_data, 1, SPI_TIMEOUT);
 
-  //step 5: set the chip select high again
-  MCP2515_CS_HIGH(); 
 
-  // sprintf(test, "instruction = %x\r\n", (uint8_t)INSTRUCTION_READ); 
-  // uart_serial_print((uint8_t*)test, sizeof(test));
-  // sprintf(test, "address = %x\r\n", address); 
-  // uart_serial_print((uint8_t*)test, sizeof(test));
+
+  sprintf(test, "instruction = %x\r\n", (uint8_t)INSTRUCTION_READ); 
+  uart_serial_print((uint8_t*)test, sizeof(test));
+  memset(test, '\0', sizeof(test)); 
+  sprintf(test, "address = %x\r\n", address); 
+  uart_serial_print((uint8_t*)test, sizeof(test));
+  memset(test, '\0', sizeof(test)); 
   sprintf(test, "rxerr = %d\r\n", read_error); 
   uart_serial_print((uint8_t*)test, sizeof(test));
-  // sprintf(test, "mode = %x\r\n\n", read_data); 
-  // uart_serial_print((uint8_t*)test, sizeof(test));
-
+  memset(test, '\0', sizeof(test)); 
+  sprintf(test, "data = %x\r\n\n", read_data); 
+  uart_serial_print((uint8_t*)test, sizeof(test));
+  memset(test, '\0', sizeof(test)); 
 }
 
 /******************************************************************************/
