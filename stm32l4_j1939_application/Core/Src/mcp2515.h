@@ -284,10 +284,10 @@ typedef union
 
 typedef struct
 {
-  uint8_t tempSIDH;
-  uint8_t tempSIDL;
-  uint8_t tempEID8;
-  uint8_t tempEID0;
+  uint8_t SIDH;
+  uint8_t SIDL;
+  uint8_t EID8;
+  uint8_t EID0;
 }id_reg_t;
 
 /******************* ********** ***********************/

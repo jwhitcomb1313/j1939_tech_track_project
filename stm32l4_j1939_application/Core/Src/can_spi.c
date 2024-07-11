@@ -136,32 +136,58 @@ uint8_t canspi_ReceiveMessage(can_msg_t *canMsg)
   return retVal; 
 }
 
-void canspi_ConvertRegToID(id_reg_t regId, can_ext_id_t *canId)
-{
-    uint8_t tempPduFormat = 0; 
-    uint8_t tempPduSpecific = 0;
-    uint8_t tempSourceAddr = 0; 
-    //
-    canId->frame.priority = ((regId.tempSIDL & ID_MASK_PRIORITY) >> 5); 
-    canId->frame.edp = (regId.tempSIDH & ID_MASK_EDP);
-    canId->frame.dp = ((regId.tempSIDH & ID_MASK_DP) >> 1);  
+void canspi_ConvertRegToID(id_reg_t regId, can_ext_id_t *extId)
+{    
+    // Ext ID 28:24
+    extId->frame.priority = ((regId.SIDH & ID_MASK_PRIORITY) >> 5); 
+    extId->frame.edp = (regId.SIDH & ID_MASK_EDP >> 4);
+    extId->frame.dp = ((regId.SIDH & ID_MASK_DP) >> 3);  
 
-    tempPduFormat = ((regId.tempSIDH & ID_MASK_PDU_FORM_UPPER) >> 2); 
-    tempPduFormat = ((regId.tempEID0 & ID_MASK_PDU_FORM_LOWER) | tempPduFormat); 
-    canId->frame.pdu_format = tempPduFormat; 
+    // Ext ID 23:16
+    extId->frame.pf = ((((regId.SIDH & ID_MASK_PF_MSB) << 5)    |
+                        (regId.SIDL & ID_MASK_PF_LSBUB) >> 3)   |
+                        (regId.SIDL & ID_MASK_PF_LSBLB));
 
-    tempPduSpecific = ((regId.tempEID0 & ID_MASK_PDU_SPEC_UPPER) >> 2); 
-    tempPduSpecific = ((regId.tempEID8 & ID_MASK_PDU_SPEC_LOWER) | tempPduSpecific); 
-    canId->frame.pdu_specific = tempPduSpecific; 
 
-    tempSourceAddr = ((regId.tempEID8 & ID_MASK_SA_UPPER) >>2); 
-    tempSourceAddr = ((regId.tempSIDL & ID_MASK_SA_LOWER) | tempSourceAddr); 
-    canId->frame.source_address = tempSourceAddr;
+    // Ext ID 15:8
+    extId->frame.ps = regId.EID8; 
+    // Ext ID 7:0
+    extId->frame.source_address = regId.EID0; 
+    
+    
+    //TODO: Need to include the EXIDE bit somewhere? bitpos 3 in SIDL
+
 }
 
 void canspi_ConvertIDToReg(can_ext_id_t extId, id_reg_t *regId)
 {
+    uint8_t tempBits = 0; 
 
+    // SIDH 7:5
+    tempBits = extId.frame.priority; 
+    regId->SIDH = (tempBits << 5); 
+    // SIDH 4:4
+    tempBits = extId.frame.edp; 
+    regId->SIDH = (tempBits << 4);
+    // SIDH 3:3
+    tempBits = extId.frame.dp; 
+    regId->SIDH = (tempBits << 3);
+    // SIDH 2:0
+    tempBits = (extId.frame.pf & REG_MASK_PF_MSB); 
+    regId->SIDH = (tempBits >> 5);
+
+    // SIDL 7:5
+    tempBits = (extId.frame.pf & REG_MASK_PF_LSBUB); 
+    regId->SIDL = (tempBits << 5); 
+    // SIDL 3:3 Set the Ext ID bit high
+    regId->SIDL = (regId->SIDL | REG_IDE_BIT); 
+    // SIDL 2:0
+
+    // EID8 7:0
+    regId->EID8 = extId.frame.ps; 
+
+    // EID0 7:0
+    regId->EID0 = extId.frame.source_address;
 }
 
 void canspi_CanPrintFunction(can_msg_t canMsg)

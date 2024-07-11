@@ -13,15 +13,21 @@
 #include <stdbool.h>
 
 
-#define ID_MASK_PRIORITY            0xE0
-#define ID_MASK_EDP                 0xFE
-#define ID_MASK_DP                  0xFD
-#define ID_MASK_PDU_FORM_UPPER      0x03
-#define ID_MASK_PDU_FORM_LOWER      0xFC
-#define ID_MASK_PDU_SPEC_UPPER      0x03
-#define ID_MASK_PDU_SPEC_LOWER      0xFC
-#define ID_MASK_SA_UPPER            0xFC
-#define ID_MASK_SA_LOWER            0x03
+#define ID_MASK_PRIORITY    0xE0
+#define ID_MASK_EDP         0x10
+#define ID_MASK_DP          0x08
+
+#define ID_MASK_PF_MSB      0x07
+// LSB Upper Byte
+#define ID_MASK_PF_LSBUB    0xE0
+// LSB Lower Byte
+#define ID_MASK_PF_LSBLB    0x03
+
+#define REG_MASK_PF_MSB     0xE0  
+#define REG_MASK_PF_LSBUB   0x1C
+#define REG_MASK_PF_LSBLB   0x03 
+
+#define REG_IDE_BIT         0x08
 /******************* ********** ***********************/
 /*******************    Enums   ***********************/
 /******************* ********** ***********************/ 
@@ -34,8 +40,8 @@ typedef union
         /********** PGN ***********/
         unsigned edp            : 1; // Reserved bit always 0
         unsigned dp             : 1; 
-        unsigned pdu_format     : 8;
-        unsigned pdu_specific   : 8; // Destination Address
+        unsigned pf             : 8;
+        unsigned ps             : 8; // Destination Address
         /** ******************** **/
         unsigned source_address : 8;
     }frame;
