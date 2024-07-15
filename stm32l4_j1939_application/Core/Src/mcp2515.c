@@ -11,6 +11,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+
+/******************** ********** ************************/
+/******************** Variables  ************************/
+/******************** ********** ************************/
 char test[30];
 uint8_t read_error; 
 
@@ -47,20 +51,32 @@ void MCP_test_function(void)
   //step 4: read the register
   read_error = (uint8_t) HAL_SPI_Receive(&hspi1, &read_data, 1, SPI_TIMEOUT);
 
-
+  //step 5: set chip select high
+  MCP2515_CS_HIGH();
 
   sprintf(test, "instruction = %x\r\n", (uint8_t)INSTRUCTION_READ); 
-  uart_serial_print((uint8_t*)test, sizeof(test));
+  uart_serial_print(test, sizeof(test));
   memset(test, '\0', sizeof(test)); 
   sprintf(test, "address = %x\r\n", address); 
-  uart_serial_print((uint8_t*)test, sizeof(test));
+  uart_serial_print(test, sizeof(test));
   memset(test, '\0', sizeof(test)); 
   sprintf(test, "rxerr = %d\r\n", read_error); 
-  uart_serial_print((uint8_t*)test, sizeof(test));
+  uart_serial_print(test, sizeof(test));
   memset(test, '\0', sizeof(test)); 
   sprintf(test, "data = %x\r\n\n", read_data); 
-  uart_serial_print((uint8_t*)test, sizeof(test));
+  uart_serial_print(test, sizeof(test));
   memset(test, '\0', sizeof(test)); 
+
+
+
+  uint8_t temp_data = 0x47;
+  MCP2515_WriteByte(MCP2515_CANCTRL, temp_data); 
+  read_data = MCP2515_ReadByte(MCP2515_CANCTRL); 
+  sprintf(test, "data = %x\r\n\n", read_data); 
+  uart_serial_print(test, sizeof(test));
+  memset(test, '\0', sizeof(test));
+
+
 }
 
 /******************************************************************************/
@@ -78,9 +94,11 @@ bool MCP2515_Init(void)
   MCP2515_CS_HIGH();
 
   if(!MCP2515_SetLoopbackMode())
-  {
+  { 
     return false; 
   }
+  sprintf(test, "loopback init\r\n"); 
+  uart_serial_print(test, sizeof(test));
   return true; 
 }
 
@@ -110,7 +128,7 @@ bool MCP2515_SetConfigurationMode(void)
 
 /******************************************************************************/
 /*!
-   \fn      bool MCP2515_SetNormalMode(void)
+   \fn      bool MCP2515_SetNormalMode(void)  MCP2515_CS_LOW();
    \brief   This function sets the mcp2515 into normal mode 
    \param   None
    \return  bool: determines if the mode was set or not
@@ -146,7 +164,13 @@ bool MCP2515_SetNormalMode(void)
 bool MCP2515_SetLoopbackMode(void)
 {
   bool retVal = false; 
-  MCP2515_WriteByte(MCP2515_CANCTRL, MODE_LOOPBACK); 
+  uint8_t mode = 0; 
+
+  mode = MCP2515_ReadByte(MCP2515_CANSTAT); 
+  sprintf(test, "initial mode = %x\r\n", mode); 
+  uart_serial_print(test, sizeof(test));
+  mode |= MODE_LOOPBACK; 
+  MCP2515_WriteByte(MCP2515_CANCTRL, mode); 
 
   for(int i = 0; i < 10; i ++)
   {
@@ -219,11 +243,12 @@ void MCP2515_WriteMultipleBytes(uint8_t address, uint8_t* data, uint8_t length)
     @{
 */
 /******************************************************************************/
-void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t* data, uint8_t length)
+void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, id_reg_t *idReg, uint8_t* data, uint8_t length)
 {
   MCP2515_CS_LOW();
 
   SPI_Tx((uint8_t)instruction);
+  SPI_TxBuffer(&idReg->SIDH, 4); 
   SPI_TxBuffer(data, length);
 
   MCP2515_CS_HIGH();

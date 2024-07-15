@@ -11,7 +11,7 @@
 #include "main.h"
 #include <stdint.h>
 #include <stdbool.h>
-
+#include "mcp2515.h"
 
 #define ID_MASK_PRIORITY    0xE0
 #define ID_MASK_EDP         0x10
@@ -27,7 +27,7 @@
 #define REG_MASK_PF_LSBUB   0x1C
 #define REG_MASK_PF_LSBLB   0x03 
 
-#define REG_IDE_BIT         0x08
+#define REG_MASK_IDE        0x08
 /******************* ********** ***********************/
 /*******************    Enums   ***********************/
 /******************* ********** ***********************/ 
@@ -75,6 +75,10 @@ bool canspi_Init(void);
 uint8_t canspi_MessagesInBuffer(void); 
 uint8_t canspi_TransmitMessage(can_msg_t *can_message); 
 uint8_t canspi_ReceiveMessage(can_msg_t *can_message); 
+void canspi_ConvertRegToID(id_reg_t regId, uint32_t *canId);
+void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId);
 
-void canspi_CanPrintFunction(can_msg_t canMsg); 
+// Test functions
+void canspi_CanLoopTest(can_msg_t canMsg); 
+void canspi_idCheck(uint32_t canId);
 #endif /* INC_CAN_SPI_H_ */

@@ -4,6 +4,8 @@
  *  Created on: 6/21/2024
  *      Author: Justin Whitcomb
  */
+#ifndef SRC_MCP2515_H_
+#define SRC_MCP2515_H_
 
 #include "main.h"
 #include "stm32l432xx.h"
@@ -301,7 +303,7 @@ bool MCP2515_SetLoopbackMode(void);
 /**  Write functions **/
 void MCP2515_WriteByte(uint8_t address, uint8_t data);
 void MCP2515_WriteMultipleBytes(uint8_t address, uint8_t* data, uint8_t length); 
-void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t* data, uint8_t length);
+void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, id_reg_t *idReg, uint8_t* data, uint8_t length); 
 /**  Read functions **/
 uint8_t MCP2515_ReadByte(uint8_t address); 
 void MCP2515_ReadMultipleBytes(uint8_t address, uint8_t* data, uint8_t length); 
@@ -312,3 +314,5 @@ ctrl_status_t MCP2515_GetControlStatus(void);
 
  
 void MCP_test_function(void);
+
+#endif /* SRC_MCP2515_H_ */

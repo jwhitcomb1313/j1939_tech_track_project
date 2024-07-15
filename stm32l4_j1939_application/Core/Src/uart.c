@@ -21,7 +21,7 @@
     @{
 */
 /******************************************************************************/
-void uart_serial_print(uint8_t* data, uint8_t size)
+void uart_serial_print(char* data, uint8_t size)
 {
     HAL_UART_Transmit(&huart2, data, size, 100);
 }

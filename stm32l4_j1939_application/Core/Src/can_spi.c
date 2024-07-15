@@ -12,7 +12,18 @@
 #include <stdbool.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdint.h>
 
+/******************** ********** ************************/
+/******************** Prototypes ************************/
+/******************** ********** ************************/
+void canspi_ConvertRegToID(id_reg_t regId, uint32_t *canId); 
+void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId); 
+
+
+/******************** ******************** ***********************/
+/******************** Function Definitions ***********************/
+/******************** ******************** ***********************/
 /******************************************************************************/
 /*!
    \fn      bool canspi_Init(void)
@@ -63,27 +74,41 @@ uint8_t canspi_MessagesInBuffer(void)
 /******************************************************************************/
 uint8_t canspi_TransmitMessage(can_msg_t *can_message)
 {
+    char tempbuf[25]; 
+
+
     uint8_t retVal = 0; 
+    id_reg_t regId;
+
+    regId.SIDH = 0; 
+    regId.SIDL = 0; 
+    regId.EID8 = 0; 
+    regId.EID0 = 0; 
+
     ctrl_status_t control_status = MCP2515_GetControlStatus (); 
+    sprintf(tempbuf, "control status = %x\r\n\n", control_status.ctrl_status); 
+    uart_serial_print(tempbuf, sizeof(tempbuf));
+
+    canspi_ConvertIDToReg(can_message->frame.canId, &regId); 
 
     if(control_status.TXB0REQ != 1)
     {
         //Load data into the buffer
-        MCP2515_WriteTxBuffer(TX_BUF_TXB0SIDH, (uint8_t*)can_message->frame.canId, can_message->frame.dlc); 
-        retVal = 1; 
+        MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB0SIDH, &regId, &(can_message->frame.data0), can_message->frame.dlc);
+        retVal = 1;  
     }
 
     if(control_status.TXB1REQ != 1)
     {
         //Load data into the buffer
-        MCP2515_WriteTxBuffer(TX_BUF_TXB1SIDH, (uint8_t*)can_message->frame.canId, can_message->frame.dlc); 
+        MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB1SIDH, &regId, &(can_message->frame.data0), can_message->frame.dlc);
         retVal = 1; 
     }
 
     if(control_status.TXB2REQ != 1)
     {
         //Load data into the buffer
-        MCP2515_WriteTxBuffer(TX_BUF_TXB2SIDH, (uint8_t*)can_message->frame.canId, can_message->frame.dlc); 
+        MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB2SIDH, &regId, &(can_message->frame.data0), can_message->frame.dlc);
         retVal = 1; 
     }
     return retVal;
@@ -101,88 +126,124 @@ uint8_t canspi_TransmitMessage(can_msg_t *can_message)
 /******************************************************************************/
 uint8_t canspi_ReceiveMessage(can_msg_t *canMsg)
 {
-  uint8_t retVal = 0;
-  rx_reg_t rxReg;
-  rx_status_t rxStatus;
-  
-  rxStatus = MCP2515_GetRxStatus();
+    //todo remove
+    char testBuf[15];
 
-  /* Check receive buffer */
-  if (rxStatus.rxBuffer != 0)
-  {
-    /* finding buffer which has a message */
-    if ((rxStatus.rxBuffer == MSG_IN_RXB0)|(rxStatus.rxBuffer == MSG_IN_BOTH_BUFFERS))
+
+    uint8_t retVal = 0;
+    rx_reg_t rxReg;
+    rx_status_t rxStatus;
+    id_reg_t idReg;
+    uint32_t idExt;  
+
+    rxStatus = MCP2515_GetRxStatus();
+    /* Check receive buffer */
+    if (rxStatus.rxBuffer != 0)
     {
-      MCP2515_ReadRxBuffer(MCP2515_READ_RXB0SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
+        sprintf(testBuf, "rx flag\r\n"); 
+        uart_serial_print(testBuf, sizeof(testBuf)); 
+        memset(testBuf, '\0', sizeof(testBuf));
+        /* finding buffer which has a message */
+        if ((rxStatus.rxBuffer == MSG_IN_RXB0)|(rxStatus.rxBuffer == MSG_IN_BOTH_BUFFERS))
+        {
+            MCP2515_ReadRxBuffer(MCP2515_READ_RXB0SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
+        }
+        else if (rxStatus.rxBuffer == MSG_IN_RXB1)
+        {
+            MCP2515_ReadRxBuffer(MCP2515_READ_RXB1SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
+        }
+
+        //todo: remove
+        MCP2515_ReadRxBuffer(MCP2515_READ_RXB0SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
+
+        idReg.SIDH = rxReg.RXBnSIDH; 
+        idReg.SIDL = rxReg.RXBnSIDL; 
+        idReg.EID8 = rxReg.RXBnEID8; 
+        idReg.EID0 = rxReg.RXBnEID0; 
+
+        canspi_ConvertRegToID(idReg, &idExt); 
+
+        canMsg->frame.canId     = idExt;
+        canMsg->frame.dlc       = rxReg.RXBnDLC;
+        canMsg->frame.data0     = rxReg.RXBnD0;
+        canMsg->frame.data1     = rxReg.RXBnD1;
+        canMsg->frame.data2     = rxReg.RXBnD2;
+        canMsg->frame.data3     = rxReg.RXBnD3;
+        canMsg->frame.data4     = rxReg.RXBnD4;
+        canMsg->frame.data5     = rxReg.RXBnD5;
+        canMsg->frame.data6     = rxReg.RXBnD6;
+        canMsg->frame.data7     = rxReg.RXBnD7;
+
+        retVal = 1;
     }
-    else if (rxStatus.rxBuffer == MSG_IN_RXB1)
-    {
-      MCP2515_ReadRxBuffer(MCP2515_READ_RXB1SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
-    }
-     
-    canMsg->frame.canId     = rxReg.RXBnSIDH;
-    canMsg->frame.dlc       = rxReg.RXBnDLC;
-    canMsg->frame.data0     = rxReg.RXBnD0;
-    canMsg->frame.data1     = rxReg.RXBnD1;
-    canMsg->frame.data2     = rxReg.RXBnD2;
-    canMsg->frame.data3     = rxReg.RXBnD3;
-    canMsg->frame.data4     = rxReg.RXBnD4;
-    canMsg->frame.data5     = rxReg.RXBnD5;
-    canMsg->frame.data6     = rxReg.RXBnD6;
-    canMsg->frame.data7     = rxReg.RXBnD7;
-    
-    retVal = 1;
-  }
-  return retVal; 
+    return retVal; 
 }
 
-void canspi_ConvertRegToID(id_reg_t regId, can_ext_id_t *extId)
-{    
+/******************************************************************************/
+/*!
+   \fn      void canspi_ConvertRegToID(id_reg_t regId, can_ext_id_t *extId)
+   \brief   This function converts register data into usable ext ID data
+   \param   id_reg_t regId: The extended ID in MCP2515 register format
+   \param   uint32_t *canId: Pointer to where the ext ID will be 
+                             stored in CAN format
+   \return  None.
+
+    @{
+*/
+/******************************************************************************/
+void canspi_ConvertRegToID(id_reg_t regId, uint32_t *canId)
+{   
+    // Temp variable type for unpacking the registers
+    can_ext_id_t extId;  
     // Ext ID 28:24
-    extId->frame.priority = ((regId.SIDH & ID_MASK_PRIORITY) >> 5); 
-    extId->frame.edp = (regId.SIDH & ID_MASK_EDP >> 4);
-    extId->frame.dp = ((regId.SIDH & ID_MASK_DP) >> 3);  
+    extId.frame.priority = ((regId.SIDH & ID_MASK_PRIORITY) >> 5); 
+    extId.frame.edp = (regId.SIDH & ID_MASK_EDP >> 4);
+    extId.frame.dp = ((regId.SIDH & ID_MASK_DP) >> 3);  
 
     // Ext ID 23:16
-    extId->frame.pf = ((((regId.SIDH & ID_MASK_PF_MSB) << 5)    |
+    extId.frame.pf = ((((regId.SIDH & ID_MASK_PF_MSB) << 5)    |
                         (regId.SIDL & ID_MASK_PF_LSBUB) >> 3)   |
                         (regId.SIDL & ID_MASK_PF_LSBLB));
-
-
     // Ext ID 15:8
-    extId->frame.ps = regId.EID8; 
+    extId.frame.ps = regId.EID8; 
     // Ext ID 7:0
-    extId->frame.source_address = regId.EID0; 
-    
-    
-    //TODO: Need to include the EXIDE bit somewhere? bitpos 3 in SIDL
+    extId.frame.source_address = regId.EID0; 
 
+    *canId = extId.id; 
 }
 
-void canspi_ConvertIDToReg(can_ext_id_t extId, id_reg_t *regId)
+/******************************************************************************/
+/*!
+   \fn      void canspi_ConvertIDToReg(can_ext_id_t extId, id_reg_t *regId)
+   \brief   This function converts register data into usable ext ID data
+   \param   can_ext_id_t extId: ext ID to be converted into regsiter format
+   \param   id_reg_t *regId: Pointer to where the ext ID will be populated in 
+                             register format. 
+   \return  None.
+
+    @{
+*/
+/******************************************************************************/
+void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId)
 {
-    uint8_t tempBits = 0; 
-
+    can_ext_id_t extId; 
+    extId.id = canId; 
     // SIDH 7:5
-    tempBits = extId.frame.priority; 
-    regId->SIDH = (tempBits << 5); 
-    // SIDH 4:4
-    tempBits = extId.frame.edp; 
-    regId->SIDH = (tempBits << 4);
+    regId->SIDH = (extId.frame.priority << 5); 
+    // SIDH 4:4 
+    regId->SIDH |= (extId.frame.edp << 4);
     // SIDH 3:3
-    tempBits = extId.frame.dp; 
-    regId->SIDH = (tempBits << 3);
-    // SIDH 2:0
-    tempBits = (extId.frame.pf & REG_MASK_PF_MSB); 
-    regId->SIDH = (tempBits >> 5);
+    regId->SIDH |= (extId.frame.dp << 3);
+    // SIDH 2:0 
+    regId->SIDH |= ((extId.frame.pf & REG_MASK_PF_MSB) >> 5);
 
-    // SIDL 7:5
-    tempBits = (extId.frame.pf & REG_MASK_PF_LSBUB); 
-    regId->SIDL = (tempBits << 5); 
+    // SIDL 7:5 
+    regId->SIDL |= ((extId.frame.pf & REG_MASK_PF_LSBUB) << 3); 
     // SIDL 3:3 Set the Ext ID bit high
-    regId->SIDL = (regId->SIDL | REG_IDE_BIT); 
-    // SIDL 2:0
-
+    regId->SIDL |= REG_MASK_IDE; 
+    // SIDL 2:0 
+    regId->SIDL |= ((extId.frame.pf & REG_MASK_PF_LSBLB));
+    
     // EID8 7:0
     regId->EID8 = extId.frame.ps; 
 
@@ -190,15 +251,114 @@ void canspi_ConvertIDToReg(can_ext_id_t extId, id_reg_t *regId)
     regId->EID0 = extId.frame.source_address;
 }
 
-void canspi_CanPrintFunction(can_msg_t canMsg)
+void canspi_CanLoopTest(can_msg_t canMsg)
 {
     char printStr[30]; 
     can_ext_id_t tempId;
     tempId.id = canMsg.frame.canId; 
 
 
-    sprintf(printStr, "PGN = %u%u%u%u\r\n", tempId.frame.edp, tempId.frame.dp, 
-            tempId.frame.pdu_format, tempId.frame.pdu_specific); 
-    uart_serial_print((uint8_t*)printStr, sizeof(printStr));
+    sprintf(printStr, "**** CAN ID ****\r\n"); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "priority = %x\r\n", tempId.frame.priority); 
+    uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr)); 
+
+    sprintf(printStr, "dp = %x\r\n", tempId.frame.dp); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "edp = %x\r\n", tempId.frame.edp); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "pf = %x\r\n", tempId.frame.pf); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "ps = %x\r\n", tempId.frame.ps); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "source address = %x\r\n\n", tempId.frame.source_address); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "**** DATA ****\r\n"); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr)); 
+
+    sprintf(printStr, "dlc = %x\r\n", canMsg.frame.dlc); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "data0 = %x\r\n", canMsg.frame.data0); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "data1 = %x\r\n", canMsg.frame.data1); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "data2 = %x\r\n", canMsg.frame.data2); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "data3 = %x\r\n", canMsg.frame.data3); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "data4 = %x\r\n", canMsg.frame.data4); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "data5 = %x\r\n", canMsg.frame.data5); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "data6 = %x\r\n", canMsg.frame.data6); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "data7 = %x\r\n\n", canMsg.frame.data7); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+}
+
+void canspi_idCheck(uint32_t canId)
+{
+    char printStr[30]; 
+    can_ext_id_t tempId;
+    tempId.id = canId; 
+
+
+    sprintf(printStr, "**** CAN ID ****\r\n"); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "priority = %x\r\n", tempId.frame.priority); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr)); 
+
+    sprintf(printStr, "dp = %x\r\n", tempId.frame.dp); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "edp = %x\r\n", tempId.frame.edp); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "pf = %x\r\n", tempId.frame.pf); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "ps = %x\r\n", tempId.frame.ps); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "source address = %x\r\n\n", tempId.frame.source_address); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
 }

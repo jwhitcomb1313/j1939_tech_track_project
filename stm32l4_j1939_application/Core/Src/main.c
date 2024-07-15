@@ -21,6 +21,7 @@
  #include "uart.h"
  #include "can_spi.h"
  #include "mcp2515.h"
+ 
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -68,7 +69,9 @@ static void MX_USART2_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
  
-  char id[] = "ID: "; 
+  char start[] = "**Start**\r\n\n"; 
+  char end[] = "**End**\r\n\n"; 
+  char byteBuf[20]; 
 /* USER CODE END 0 */
 
 /**
@@ -103,8 +106,13 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-  canspi_Init(); 
-  
+
+
+  uart_serial_print(start, sizeof(start));
+  // canspi_Init(); 
+  MCP_test_function();
+  uart_serial_print(end, sizeof(end));
+   
 
   can_msg_t tx_message;  
   can_ext_id_t tx_id; 
@@ -112,42 +120,68 @@ int main(void)
   tx_id.frame.priority = 0; 
   tx_id.frame.edp = 0;
   tx_id.frame.dp = 1; 
-  tx_id.frame.pdu_format = 0x18; 
-  tx_id.frame.pdu_specific = 0xFE; 
+  tx_id.frame.pf = 0x18; 
+  tx_id.frame.ps = 0xFE; 
   tx_id.frame.source_address = 0xFE; 
+  uint32_t uId = tx_id.id; 
+  tx_message.frame.canId = tx_id.id; 
+  tx_message.frame.dlc = 8;
+  tx_message.frame.data0 = 0xFF; 
+  tx_message.frame.data1 = 0x1; 
+  tx_message.frame.data2 = 0x2;
+  tx_message.frame.data3 = 0x3;
+  tx_message.frame.data4 = 0x5;
+  tx_message.frame.data5 = 0x5;
+  tx_message.frame.data6 = 0x6;
+  tx_message.frame.data7 = 0x7;
 
-  tx_message.frame.dlc = 2;
-  tx_message.frame.data0 = 0x1; 
-  tx_message.frame.data1 = 0x2; 
+  can_msg_t rx_message;  
 
-  // canspi_CanPrintFunction(tx_message); 
-  // can_msg_t rx_message; 
-  
+  canspi_TransmitMessage(&tx_message); 
+  HAL_Delay(500);
+  if(canspi_ReceiveMessage(&rx_message))
+  {
+    canspi_CanLoopTest(rx_message); 
+  } 
+  // uint8_t byte = 0xFF; 
+  // uint8_t readByte = 0; 
+  // rx_status_t rxStatus; 
+  // rxStatus.ctrl_rx_status = 0; 
+  // MCP2515_WriteByte(0x31, byte);
+  // HAL_Delay(1000);
+  // rxStatus = MCP2515_GetRxStatus();
+  // readByte = MCP2515_ReadByte(0x31); 
 
+   
+  // sprintf(byteBuf, "data = %x\r\n\n", readByte); 
+  // uart_serial_print(byteBuf, sizeof(byteBuf));
+  // memset(byteBuf, '\0', sizeof(byteBuf));
 
+  // sprintf(byteBuf, "buffer bit = %x\r\n\n", rxStatus.rxBuffer); 
+  // uart_serial_print(byteBuf, sizeof(byteBuf));
+  // memset(byteBuf, '\0', sizeof(byteBuf));
+  id_reg_t regId; 
+  regId.SIDH = 0; 
+  regId.SIDL = 0; 
+  regId.EID8 = 0; 
+  regId.EID0 = 0; 
 
-
-
+  canspi_ConvertIDToReg(uId, &regId); 
+  canspi_ConvertRegToID(regId, &uId); 
+  canspi_idCheck(uId); 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-
-
     // canspi_TransmitMessage(&tx_message); 
     // if(canspi_ReceiveMessage(&rx_message))
     // {
-    //   // uart_serial_print((uint8_t*)rx_message.array, sizeof(rx_message.array)); 
-    //   sprintf(id_buf, "ID: %x\r\n", rx_message.frame.canId.id); 
-    //   uart_serial_print((uint8_t*)id_buf, sizeof(id_buf)); 
-    //   sprintf(data_buf, "Data byte 0: %x\r\n", rx_message.frame.data0); 
-    //   uart_serial_print((uint8_t*)data_buf, sizeof(data_buf)); 
-    //   sprintf(data_buf, "Data byte 1: %x\r\n\n", rx_message.frame.data1); 
-    //   uart_serial_print((uint8_t*)data_buf, sizeof(data_buf));
+    //   canspi_CanLoopTest(rx_message); 
     // } 
-    // HAL_Delay(1000); 
+    
+    HAL_Delay(1000); 
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
