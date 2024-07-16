@@ -13,6 +13,20 @@
 /* MCP2515 SPI Instruction Set */
 #define MCP2515_RESET           0xC0
 
+#define MCP2515_TXB0SIDH        0x31
+#define MCP2515_TXB0SIDL        0x32
+#define MCP2515_TXB0EID8        0x33
+#define MCP2515_TXB0EID0        0x34
+#define MCP2515_TXB0DLC         0x35
+#define MCP2515_TXB0D0          0x36
+#define MCP2515_TXB0D1          0x37
+#define MCP2515_TXB0D2          0x38
+#define MCP2515_TXB0D3          0x39
+#define MCP2515_TXB0D4          0x3A
+#define MCP2515_TXB0D5          0x3B
+#define MCP2515_TXB0D6          0x3C
+#define MCP2515_TXB0D7          0x3D
+
 #define MCP2515_READ            0x03
 #define MCP2515_READ_RXB0SIDH   0x90
 #define MCP2515_READ_RXB0D0     0x92
@@ -303,7 +317,12 @@ bool MCP2515_SetLoopbackMode(void);
 /**  Write functions **/
 void MCP2515_WriteByte(uint8_t address, uint8_t data);
 void MCP2515_WriteMultipleBytes(uint8_t address, uint8_t* data, uint8_t length); 
-void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, id_reg_t *idReg, uint8_t* data, uint8_t length); 
+void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t* idReg, uint8_t* data, uint8_t dlc); 
+
+void tempMCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t SIDH, uint8_t SIDL, 
+                               uint8_t EID8, uint8_t EID0, uint8_t* data, uint8_t dlc);
+
+void MCP2515_RequestToSend(uint8_t instruction);
 /**  Read functions **/
 uint8_t MCP2515_ReadByte(uint8_t address); 
 void MCP2515_ReadMultipleBytes(uint8_t address, uint8_t* data, uint8_t length); 

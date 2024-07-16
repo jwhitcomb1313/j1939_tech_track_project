@@ -33,48 +33,48 @@ static void SPI_RxBuffer(uint8_t *buffer, uint8_t length);
 void MCP_test_function(void)
 { 
   
-  uint8_t instruction = MCP2515_READ;
-  uint8_t address = MCP2515_CANCTRL; 
-  uint8_t read_data = 0xFF;
-  uint8_t read_error = 0xFF;
+  // uint8_t instruction = MCP2515_READ;
+  // uint8_t address = MCP2515_CANCTRL; 
+  // uint8_t read_data = 0xFF;
+  // uint8_t read_error = 0xFF;
 
 
 
 
-  //step 1: set chip select low  
-  MCP2515_CS_LOW();
+  // //step 1: set chip select low  
+  // MCP2515_CS_LOW();
   
-  //step 2: tell the chip I want to read a register
-  HAL_SPI_Transmit(&hspi1, &instruction, 1, SPI_TIMEOUT);
-  //step 3: tell it the location I want to read
-  HAL_SPI_Transmit(&hspi1, &address, 1, SPI_TIMEOUT);
-  //step 4: read the register
-  read_error = (uint8_t) HAL_SPI_Receive(&hspi1, &read_data, 1, SPI_TIMEOUT);
+  // //step 2: tell the chip I want to read a register
+  // HAL_SPI_Transmit(&hspi1, &instruction, 1, SPI_TIMEOUT);
+  // //step 3: tell it the location I want to read
+  // HAL_SPI_Transmit(&hspi1, &address, 1, SPI_TIMEOUT);
+  // //step 4: read the register
+  // read_error = (uint8_t) HAL_SPI_Receive(&hspi1, &read_data, 1, SPI_TIMEOUT);
 
-  //step 5: set chip select high
-  MCP2515_CS_HIGH();
+  // //step 5: set chip select high
+  // MCP2515_CS_HIGH();
 
-  sprintf(test, "instruction = %x\r\n", (uint8_t)INSTRUCTION_READ); 
-  uart_serial_print(test, sizeof(test));
-  memset(test, '\0', sizeof(test)); 
-  sprintf(test, "address = %x\r\n", address); 
-  uart_serial_print(test, sizeof(test));
-  memset(test, '\0', sizeof(test)); 
-  sprintf(test, "rxerr = %d\r\n", read_error); 
-  uart_serial_print(test, sizeof(test));
-  memset(test, '\0', sizeof(test)); 
-  sprintf(test, "data = %x\r\n\n", read_data); 
-  uart_serial_print(test, sizeof(test));
-  memset(test, '\0', sizeof(test)); 
+  // sprintf(test, "instruction = %x\r\n", (uint8_t)INSTRUCTION_READ); 
+  // uart_serial_print(test, sizeof(test));
+  // memset(test, '\0', sizeof(test)); 
+  // sprintf(test, "address = %x\r\n", address); 
+  // uart_serial_print(test, sizeof(test));
+  // memset(test, '\0', sizeof(test)); 
+  // sprintf(test, "rxerr = %d\r\n", read_error); 
+  // uart_serial_print(test, sizeof(test));
+  // memset(test, '\0', sizeof(test)); 
+  // sprintf(test, "data = %x\r\n\n", read_data); 
+  // uart_serial_print(test, sizeof(test));
+  // memset(test, '\0', sizeof(test)); 
 
 
 
   uint8_t temp_data = 0x47;
   MCP2515_WriteByte(MCP2515_CANCTRL, temp_data); 
-  read_data = MCP2515_ReadByte(MCP2515_CANCTRL); 
-  sprintf(test, "data = %x\r\n\n", read_data); 
-  uart_serial_print(test, sizeof(test));
-  memset(test, '\0', sizeof(test));
+  // read_data = MCP2515_ReadByte(MCP2515_CANCTRL); 
+  // sprintf(test, "data = %x\r\n\n", read_data); 
+  // uart_serial_print(test, sizeof(test));
+  // memset(test, '\0', sizeof(test));
 
 
 }
@@ -243,17 +243,50 @@ void MCP2515_WriteMultipleBytes(uint8_t address, uint8_t* data, uint8_t length)
     @{
 */
 /******************************************************************************/
-void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, id_reg_t *idReg, uint8_t* data, uint8_t length)
+void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t* idReg, uint8_t* data, uint8_t dlc)
 {
   MCP2515_CS_LOW();
 
   SPI_Tx((uint8_t)instruction);
-  SPI_TxBuffer(&idReg->SIDH, 4); 
-  SPI_TxBuffer(data, length);
+  SPI_TxBuffer(idReg, 4); 
+  SPI_Tx(dlc); 
+  SPI_TxBuffer(data, dlc);
 
   MCP2515_CS_HIGH();
 }
 
+void tempMCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t SIDH, uint8_t SIDL, 
+                               uint8_t EID8, uint8_t EID0, uint8_t* data, uint8_t dlc)
+{
+  char buf[30]; 
+
+  sprintf(buf, "SIDL byte = %x\r\n", SIDL); 
+  uart_serial_print(buf, sizeof(buf));
+  memset(buf, '\0', sizeof(buf));
+
+  sprintf(buf, "EID0 byte = %x\r\n", EID0); 
+  uart_serial_print(buf, sizeof(buf));
+  memset(buf, '\0', sizeof(buf));
+
+  MCP2515_CS_LOW();
+
+  // SPI_Tx((uint8_t)instruction);
+  SPI_Tx(MCP2515_WRITE);
+  SPI_Tx(MCP2515_TXB0SIDH); 
+  SPI_Tx(SIDH); 
+  // SPI_Tx(0x01);
+  SPI_Tx(SIDL); 
+
+  SPI_Tx(EID8); 
+
+  // SPI_Tx(0x01);
+  SPI_Tx(EID0); 
+  
+  SPI_Tx(dlc); 
+  SPI_TxBuffer(data, dlc);
+
+  MCP2515_CS_HIGH();
+}
 /******************************************************************************/
 /*!
    \fn      uint8_t MCP2515_ReadByte(uint8_t address)
@@ -390,6 +423,16 @@ ctrl_status_t MCP2515_GetControlStatus(void)
   MCP2515_CS_HIGH();
   
   return retVal;
+}
+
+/* request to send */
+void MCP2515_RequestToSend(uint8_t instruction)
+{
+  MCP2515_CS_LOW();
+  
+  SPI_Tx(instruction);
+      
+  MCP2515_CS_HIGH();
 }
 
 /******************** Wrapper Functions ***********************/

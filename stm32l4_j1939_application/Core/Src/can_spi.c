@@ -74,9 +74,6 @@ uint8_t canspi_MessagesInBuffer(void)
 /******************************************************************************/
 uint8_t canspi_TransmitMessage(can_msg_t *can_message)
 {
-    char tempbuf[25]; 
-
-
     uint8_t retVal = 0; 
     id_reg_t regId;
 
@@ -85,32 +82,37 @@ uint8_t canspi_TransmitMessage(can_msg_t *can_message)
     regId.EID8 = 0; 
     regId.EID0 = 0; 
 
-    ctrl_status_t control_status = MCP2515_GetControlStatus (); 
-    sprintf(tempbuf, "control status = %x\r\n\n", control_status.ctrl_status); 
-    uart_serial_print(tempbuf, sizeof(tempbuf));
+    ctrl_status_t control_status = MCP2515_GetControlStatus(); 
 
     canspi_ConvertIDToReg(can_message->frame.canId, &regId); 
 
+    printRegister(regId); 
     if(control_status.TXB0REQ != 1)
     {
         //Load data into the buffer
-        MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB0SIDH, &regId, &(can_message->frame.data0), can_message->frame.dlc);
+        // MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB0SIDH, &(regId.SIDH), &(can_message->frame.data0), can_message->frame.dlc);
+        tempMCP2515_WriteTxBuffer(MCP2515_LOAD_TXB0SIDH, regId.SIDH, regId.SIDL, regId.EID8, regId.EID0, 
+                                  &(can_message->frame.data0), can_message->frame.dlc); 
+        canspi_ReadTxRegisterPrint(); 
+        // MCP2515_RequestToSend(MCP2515_RTS_TX0);
         retVal = 1;  
     }
 
-    if(control_status.TXB1REQ != 1)
-    {
-        //Load data into the buffer
-        MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB1SIDH, &regId, &(can_message->frame.data0), can_message->frame.dlc);
-        retVal = 1; 
-    }
+    // if(control_status.TXB1REQ != 1)
+    // {
+    //     //Load data into the buffer
+    //     MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB1SIDH, &regId, &(can_message->frame.data0), can_message->frame.dlc);
+    //     MCP2515_RequestToSend(MCP2515_RTS_TX1);
+    //     retVal = 1; 
+    // }
 
-    if(control_status.TXB2REQ != 1)
-    {
-        //Load data into the buffer
-        MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB2SIDH, &regId, &(can_message->frame.data0), can_message->frame.dlc);
-        retVal = 1; 
-    }
+    // if(control_status.TXB2REQ != 1)
+    // {
+    //     //Load data into the buffer
+    //     MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB2SIDH, &regId, &(can_message->frame.data0), can_message->frame.dlc);
+    //     MCP2515_RequestToSend(MCP2515_RTS_TX2);
+    //     retVal = 1; 
+    // }
     return retVal;
 }    
 
@@ -251,6 +253,8 @@ void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId)
     regId->EID0 = extId.frame.source_address;
 }
 
+
+
 void canspi_CanLoopTest(can_msg_t canMsg)
 {
     char printStr[30]; 
@@ -361,4 +365,108 @@ void canspi_idCheck(uint32_t canId)
     sprintf(printStr, "source address = %x\r\n\n", tempId.frame.source_address); 
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
+}
+
+void canspi_ReadTxRegisterPrint(void)
+{
+    char buf[30]; 
+    uint8_t readByte = 0;  
+
+    sprintf(buf, "***Register Values***\r\n\r\n");
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0CTRL);
+    sprintf(buf, "TXB0CTRL = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0SIDH);
+    sprintf(buf, "TXB0SIDH = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0SIDL);
+    sprintf(buf, "TXB0SIDL = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0EID8);
+    sprintf(buf, "TXB0EID8 = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0EID0);
+    sprintf(buf, "TXB0EID0 = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0DLC);
+    sprintf(buf, "TXB0DLC = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0D0);
+    sprintf(buf, "TXB0D0 = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0D1);
+    sprintf(buf, "TXB0D1 = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0D2);
+    sprintf(buf, "TXB0D2 = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0D3);
+    sprintf(buf, "TXB0D3 = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0D4);
+    sprintf(buf, "TXB0D4 = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0D5);
+    sprintf(buf, "TXB0D5 = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0D6);
+    sprintf(buf, "TXB0D6 = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    readByte = MCP2515_ReadByte(MCP2515_TXB0D7);
+    sprintf(buf, "TXB0D7 = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+}
+
+void printRegister(id_reg_t regId)
+{
+    char buf[30];  
+    sprintf(buf, "***Bit Packed Registers***\r\n\n"); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    sprintf(buf, "SIDH = %x\r\n", regId.SIDH); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    sprintf(buf, "SIDL = %x\r\n", regId.SIDL); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    sprintf(buf, "EID8 = %x\r\n", regId.EID8); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    sprintf(buf, "EID0 = %x\r\n", regId.EID0); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
 }

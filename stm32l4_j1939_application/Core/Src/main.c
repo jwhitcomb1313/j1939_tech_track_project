@@ -116,14 +116,16 @@ int main(void)
 
   can_msg_t tx_message;  
   can_ext_id_t tx_id; 
-  
+  // uint32_t uId = tx_id.id;
+
+  // Load ID
   tx_id.frame.priority = 0; 
   tx_id.frame.edp = 0;
   tx_id.frame.dp = 1; 
   tx_id.frame.pf = 0x18; 
   tx_id.frame.ps = 0xFE; 
-  tx_id.frame.source_address = 0xFE; 
-  uint32_t uId = tx_id.id; 
+  tx_id.frame.source_address = 0xFC; 
+  // Load Frame
   tx_message.frame.canId = tx_id.id; 
   tx_message.frame.dlc = 8;
   tx_message.frame.data0 = 0xFF; 
@@ -138,11 +140,16 @@ int main(void)
   can_msg_t rx_message;  
 
   canspi_TransmitMessage(&tx_message); 
-  HAL_Delay(500);
-  if(canspi_ReceiveMessage(&rx_message))
-  {
-    canspi_CanLoopTest(rx_message); 
-  } 
+  // HAL_Delay(500);
+  // if(canspi_ReceiveMessage(&rx_message))
+  // {
+  //   canspi_CanLoopTest(rx_message); 
+  // } 
+
+  // canspi_ReceiveMessage(&rx_message); 
+  // canspi_CanLoopTest(rx_message);
+
+
   // uint8_t byte = 0xFF; 
   // uint8_t readByte = 0; 
   // rx_status_t rxStatus; 
@@ -160,15 +167,16 @@ int main(void)
   // sprintf(byteBuf, "buffer bit = %x\r\n\n", rxStatus.rxBuffer); 
   // uart_serial_print(byteBuf, sizeof(byteBuf));
   // memset(byteBuf, '\0', sizeof(byteBuf));
-  id_reg_t regId; 
-  regId.SIDH = 0; 
-  regId.SIDL = 0; 
-  regId.EID8 = 0; 
-  regId.EID0 = 0; 
+  // id_reg_t regId; 
+  // uint32_t newId = 0; 
+  // regId.SIDH = 0; 
+  // regId.SIDL = 0; 
+  // regId.EID8 = 0; 
+  // regId.EID0 = 0; 
 
-  canspi_ConvertIDToReg(uId, &regId); 
-  canspi_ConvertRegToID(regId, &uId); 
-  canspi_idCheck(uId); 
+  // canspi_ConvertIDToReg(uId, &regId); 
+  // canspi_ConvertRegToID(regId, &newId); 
+  // canspi_idCheck(newId); 
   /* USER CODE END 2 */
 
   /* Infinite loop */
