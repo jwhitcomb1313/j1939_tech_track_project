@@ -108,65 +108,39 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-  uart_serial_print(start, sizeof(start));
+  // uart_serial_print(start, sizeof(start));
   // canspi_Init(); 
-  MCP_test_function();
-  uart_serial_print(end, sizeof(end));
+  // MCP_test_function();
+  // uart_serial_print(end, sizeof(end));
    
+  testRegisterWrite(); 
+  // can_msg_t tx_message;  
+  // can_ext_id_t tx_id; 
+  // // // uint32_t uId = tx_id.id;
 
-  can_msg_t tx_message;  
-  can_ext_id_t tx_id; 
-  // uint32_t uId = tx_id.id;
+  // // Load ID
+  // tx_id.frame.priority = 0; 
+  // tx_id.frame.edp = 0;
+  // tx_id.frame.dp = 1; 
+  // tx_id.frame.pf = 0x18; 
+  // tx_id.frame.ps = 0xFE; 
+  // tx_id.frame.source_address = 0xFC; 
+  // // Load Frame
+  // tx_message.frame.canId = tx_id.id; 
+  // tx_message.frame.dlc = 8;
+  // tx_message.frame.data0 = 0xFF; 
+  // tx_message.frame.data1 = 0x1; 
+  // tx_message.frame.data2 = 0x2;
+  // tx_message.frame.data3 = 0x3;
+  // tx_message.frame.data4 = 0x5;
+  // tx_message.frame.data5 = 0x5;
+  // tx_message.frame.data6 = 0x6;
+  // tx_message.frame.data7 = 0x7;
 
-  // Load ID
-  tx_id.frame.priority = 0; 
-  tx_id.frame.edp = 0;
-  tx_id.frame.dp = 1; 
-  tx_id.frame.pf = 0x18; 
-  tx_id.frame.ps = 0xFE; 
-  tx_id.frame.source_address = 0xFC; 
-  // Load Frame
-  tx_message.frame.canId = tx_id.id; 
-  tx_message.frame.dlc = 8;
-  tx_message.frame.data0 = 0xFF; 
-  tx_message.frame.data1 = 0x1; 
-  tx_message.frame.data2 = 0x2;
-  tx_message.frame.data3 = 0x3;
-  tx_message.frame.data4 = 0x5;
-  tx_message.frame.data5 = 0x5;
-  tx_message.frame.data6 = 0x6;
-  tx_message.frame.data7 = 0x7;
+  // can_msg_t rx_message;  
 
-  can_msg_t rx_message;  
-
-  canspi_TransmitMessage(&tx_message); 
-  // HAL_Delay(500);
-  // if(canspi_ReceiveMessage(&rx_message))
-  // {
-  //   canspi_CanLoopTest(rx_message); 
-  // } 
-
-  // canspi_ReceiveMessage(&rx_message); 
-  // canspi_CanLoopTest(rx_message);
-
-
-  // uint8_t byte = 0xFF; 
-  // uint8_t readByte = 0; 
-  // rx_status_t rxStatus; 
-  // rxStatus.ctrl_rx_status = 0; 
-  // MCP2515_WriteByte(0x31, byte);
-  // HAL_Delay(1000);
-  // rxStatus = MCP2515_GetRxStatus();
-  // readByte = MCP2515_ReadByte(0x31); 
-
+  // canspi_TransmitMessage(&tx_message); 
    
-  // sprintf(byteBuf, "data = %x\r\n\n", readByte); 
-  // uart_serial_print(byteBuf, sizeof(byteBuf));
-  // memset(byteBuf, '\0', sizeof(byteBuf));
-
-  // sprintf(byteBuf, "buffer bit = %x\r\n\n", rxStatus.rxBuffer); 
-  // uart_serial_print(byteBuf, sizeof(byteBuf));
-  // memset(byteBuf, '\0', sizeof(byteBuf));
   // id_reg_t regId; 
   // uint32_t newId = 0; 
   // regId.SIDH = 0; 

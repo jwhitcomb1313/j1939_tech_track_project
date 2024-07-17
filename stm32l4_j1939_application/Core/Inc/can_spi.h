@@ -83,4 +83,5 @@ void canspi_CanLoopTest(can_msg_t canMsg);
 void canspi_idCheck(uint32_t canId);
 void canspi_ReadTxRegisterPrint(void); 
 void printRegister(id_reg_t regId); 
+void testRegisterWrite(void);
 #endif /* INC_CAN_SPI_H_ */

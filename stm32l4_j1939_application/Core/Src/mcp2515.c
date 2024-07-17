@@ -274,13 +274,13 @@ void tempMCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t SIDH, ui
   SPI_Tx(MCP2515_WRITE);
   SPI_Tx(MCP2515_TXB0SIDH); 
   SPI_Tx(SIDH); 
-  // SPI_Tx(0x01);
-  SPI_Tx(SIDL); 
+  SPI_Tx(0xC8);
+  // SPI_Tx(SIDL); 
 
   SPI_Tx(EID8); 
 
-  // SPI_Tx(0x01);
-  SPI_Tx(EID0); 
+  SPI_Tx(0xFC);
+  // SPI_Tx(EID0); 
   
   SPI_Tx(dlc); 
   SPI_TxBuffer(data, dlc);

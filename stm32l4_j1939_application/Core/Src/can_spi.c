@@ -14,6 +14,11 @@
 #include <stdio.h>
 #include <stdint.h>
 
+
+
+uint8_t regData[13] = {0x08, 0xC8, 0xFE, 0xFC, 0x08, 0xFF, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+uint8_t nullData[13];
+
 /******************** ********** ************************/
 /******************** Prototypes ************************/
 /******************** ********** ************************/
@@ -369,15 +374,10 @@ void canspi_idCheck(uint32_t canId)
 
 void canspi_ReadTxRegisterPrint(void)
 {
-    char buf[30]; 
+    char buf[34]; 
     uint8_t readByte = 0;  
 
-    sprintf(buf, "***Register Values***\r\n\r\n");
-    uart_serial_print(buf, sizeof(buf));
-    memset(buf, '\0', sizeof(buf));
-
-    readByte = MCP2515_ReadByte(MCP2515_TXB0CTRL);
-    sprintf(buf, "TXB0CTRL = %x\r\n", readByte); 
+    sprintf(buf, "\r\n\r\n***Register Values***\r\r\n\r\n");
     uart_serial_print(buf, sizeof(buf));
     memset(buf, '\0', sizeof(buf));
 
@@ -470,3 +470,68 @@ void printRegister(id_reg_t regId)
     uart_serial_print(buf, sizeof(buf));
     memset(buf, '\0', sizeof(buf));
 }
+
+void testRegisterWrite(void)
+{ 
+    uint8_t writeByte = 0; 
+    uint8_t readByte = 0; 
+    char buf[40]; 
+    // memset(nullData, '\0', sizeof(nullData)); 
+
+    // MCP2515_WriteMultipleBytes(MCP2515_TXB0SIDH, nullData, sizeof(nullData)); 
+    // canspi_ReadTxRegisterPrint(); 
+    // MCP2515_WriteMultipleBytes(MCP2515_TXB0SIDH, regData, sizeof(regData)); 
+    // canspi_ReadTxRegisterPrint(); 
+    sprintf(buf, "****** START ******\r\n\n"); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    // for(uint8_t i = 0x00; i < 0xFF; i++)
+    // {  
+    //     MCP2515_WriteByte(MCP2515_TXB0SIDL, i); 
+    //     readByte = MCP2515_ReadByte(MCP2515_TXB0SIDL);
+    //     sprintf(buf, "TXB0SIDL = %x\r\n", readByte); 
+    //     uart_serial_print(buf, sizeof(buf));
+    //     memset(buf, '\0', sizeof(buf));
+    // }
+
+    // writeByte = 0x08; 
+    // MCP2515_WriteByte(MCP2515_TXB0SIDH, writeByte);
+
+    writeByte = 0xC8; 
+    MCP2515_WriteByte(MCP2515_TXB0SIDL, writeByte);
+    readByte = MCP2515_ReadByte(MCP2515_TXB0SIDL);
+    sprintf(buf, "TXB0SIDL = %x\r\n", readByte); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+
+    // writeByte = 0xFE; 
+    // MCP2515_WriteByte(MCP2515_TXB0EID8, writeByte);
+    // writeByte = 0xFC; 
+    // MCP2515_WriteByte(MCP2515_TXB0EID0, writeByte);
+    // writeByte = 0x08; 
+    // MCP2515_WriteByte(MCP2515_TXB0DLC, writeByte);
+    // writeByte = 0xFF; 
+    // MCP2515_WriteByte(MCP2515_TXB0D0, writeByte);
+    // writeByte = 0x01; 
+    // MCP2515_WriteByte(MCP2515_TXB0D1, writeByte);
+    // writeByte = 0x02; 
+    // MCP2515_WriteByte(MCP2515_TXB0D2, writeByte);
+    // writeByte = 0x03; 
+    // MCP2515_WriteByte(MCP2515_TXB0D3, writeByte);
+    // writeByte = 0x04; 
+    // MCP2515_WriteByte(MCP2515_TXB0D4, writeByte);
+    // writeByte = 0x05; 
+    // MCP2515_WriteByte(MCP2515_TXB0D5, writeByte);
+    // writeByte = 0x06; 
+    // MCP2515_WriteByte(MCP2515_TXB0D6, writeByte);
+    // writeByte = 0x07; 
+    // MCP2515_WriteByte(MCP2515_TXB0D7, writeByte);
+
+    // canspi_ReadTxRegisterPrint();   
+
+    sprintf(buf, "****** END ******\r\n\r\n"); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+}
+
