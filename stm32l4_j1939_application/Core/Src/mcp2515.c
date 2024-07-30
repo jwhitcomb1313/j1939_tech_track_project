@@ -35,7 +35,7 @@ void MCP_test_function(void)
   
   // uint8_t instruction = MCP2515_READ;
   // uint8_t address = MCP2515_CANCTRL; 
-  // uint8_t read_data = 0xFF;
+
   // uint8_t read_error = 0xFF;
 
 
@@ -68,13 +68,13 @@ void MCP_test_function(void)
   // memset(test, '\0', sizeof(test)); 
 
 
-
+  uint8_t read_data = 0xFF;
   uint8_t temp_data = 0x47;
   MCP2515_WriteByte(MCP2515_CANCTRL, temp_data); 
-  // read_data = MCP2515_ReadByte(MCP2515_CANCTRL); 
-  // sprintf(test, "data = %x\r\n\n", read_data); 
-  // uart_serial_print(test, sizeof(test));
-  // memset(test, '\0', sizeof(test));
+  read_data = MCP2515_ReadByte(MCP2515_CANCTRL); 
+  sprintf(test, "data = %x\r\n\n", read_data); 
+  uart_serial_print(test, sizeof(test));
+  memset(test, '\0', sizeof(test));
 
 
 }

@@ -69,7 +69,7 @@ static void MX_USART2_UART_Init(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
  
-  char start[] = "**Start**\r\n\n"; 
+  char start[] = "**hello hell**\r\n\n"; 
   char end[] = "**End**\r\n\n"; 
   char byteBuf[20]; 
 /* USER CODE END 0 */
@@ -108,9 +108,9 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-  // uart_serial_print(start, sizeof(start));
+  uart_serial_print(start, sizeof(start));
   // canspi_Init(); 
-  // MCP_test_function();
+  MCP_test_function();
   // uart_serial_print(end, sizeof(end));
    
   testRegisterWrite(); 
@@ -137,7 +137,7 @@ int main(void)
   // tx_message.frame.data6 = 0x6;
   // tx_message.frame.data7 = 0x7;
 
-  // can_msg_t rx_message;  
+  can_msg_t rx_message;  
 
   // canspi_TransmitMessage(&tx_message); 
    
@@ -151,16 +151,28 @@ int main(void)
   // canspi_ConvertIDToReg(uId, &regId); 
   // canspi_ConvertRegToID(regId, &newId); 
   // canspi_idCheck(newId); 
+  char buf[30];  
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+  HAL_Delay(1000); 
+  if(canspi_ReceiveMessage(&rx_message))
+  {
+    // canspi_CanLoopTest(rx_message); 
+    sprintf(buf, "****** END ******\r\n\r\n"); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
+  } 
   while (1)
   {
     // canspi_TransmitMessage(&tx_message); 
     // if(canspi_ReceiveMessage(&rx_message))
     // {
     //   canspi_CanLoopTest(rx_message); 
+    //   sprintf(buf, "****** END ******\r\n\r\n"); 
+    //   uart_serial_print(buf, sizeof(buf));
+    //   memset(buf, '\0', sizeof(buf));
     // } 
     
     HAL_Delay(1000); 
@@ -187,19 +199,12 @@ void SystemClock_Config(void)
     Error_Handler();
   }
 
-  /** Configure LSE Drive Capability
-  */
-  HAL_PWR_EnableBkUpAccess();
-  __HAL_RCC_LSEDRIVE_CONFIG(RCC_LSEDRIVE_LOW);
-
   /** Initializes the RCC Oscillators according to the specified parameters
   * in the RCC_OscInitTypeDef structure.
   */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSE|RCC_OSCILLATORTYPE_MSI;
-  RCC_OscInitStruct.LSEState = RCC_LSE_ON;
-  RCC_OscInitStruct.MSIState = RCC_MSI_ON;
-  RCC_OscInitStruct.MSICalibrationValue = 0;
-  RCC_OscInitStruct.MSIClockRange = RCC_MSIRANGE_6;
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
+  RCC_OscInitStruct.HSIState = RCC_HSI_ON;
+  RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
@@ -210,7 +215,7 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_MSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
@@ -219,10 +224,6 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
-
-  /** Enable MSI Auto calibration
-  */
-  HAL_RCCEx_EnableMSIPLLMode();
 }
 
 /**
