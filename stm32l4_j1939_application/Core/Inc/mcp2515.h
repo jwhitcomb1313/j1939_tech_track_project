@@ -10,6 +10,11 @@
 #include "main.h"
 #include "stm32l432xx.h"
 #include <stdbool.h>
+
+#define MODE_MASK_CONFIG        0x9F
+#define MODE_MASK_NORMAL        0x1F
+#define MODE_MASK_LOOPBACK      0x40
+
 /* MCP2515 SPI Instruction Set */
 #define MCP2515_RESET           0xC0
 
@@ -238,9 +243,72 @@ typedef struct
   uint8_t EID0;
 }id_reg_t;
 
+/* MCP2515 Registers */
+typedef struct{
+  uint8_t RXF0SIDH;
+  uint8_t RXF0SIDL;
+  uint8_t RXF0EID8;
+  uint8_t RXF0EID0;
+}RXF0;
+
+typedef struct{
+  uint8_t RXF1SIDH;
+  uint8_t RXF1SIDL;
+  uint8_t RXF1EID8;
+  uint8_t RXF1EID0;
+}RXF1;
+
+typedef struct{
+  uint8_t RXF2SIDH;
+  uint8_t RXF2SIDL;
+  uint8_t RXF2EID8;
+  uint8_t RXF2EID0;
+}RXF2;
+
+typedef struct{
+  uint8_t RXF3SIDH;
+  uint8_t RXF3SIDL;
+  uint8_t RXF3EID8;
+  uint8_t RXF3EID0;
+}RXF3;
+
+typedef struct{
+  uint8_t RXF4SIDH;
+  uint8_t RXF4SIDL;
+  uint8_t RXF4EID8;
+  uint8_t RXF4EID0;
+}RXF4;
+
+typedef struct{
+  uint8_t RXF5SIDH;
+  uint8_t RXF5SIDL;
+  uint8_t RXF5EID8;
+  uint8_t RXF5EID0;
+}RXF5;
+
+typedef struct{
+  uint8_t RXM0SIDH;
+  uint8_t RXM0SIDL;
+  uint8_t RXM0EID8;
+  uint8_t RXM0EID0;
+}RXM0;
+
+typedef struct{
+  uint8_t RXM1SIDH;
+  uint8_t RXM1SIDL;
+  uint8_t RXM1EID8;
+  uint8_t RXM1EID0;
+}RXM1;
+
+
 /******************* ********** ***********************/
 /******************* Prototypes ***********************/
 /******************* ********** ***********************/
+
+//todo: remove after testing
+void SPI_TxBuffer(uint8_t *buffer, uint8_t length); 
+
+
 /**  Init/Mode functions **/
 bool MCP2515_Init(void); 
 bool MCP2515_SetConfigurationMode(void);
@@ -250,7 +318,9 @@ bool MCP2515_SetLoopbackMode(void);
 void MCP2515_WriteByte(uint8_t address, uint8_t data);
 void MCP2515_WriteMultipleBytes(uint8_t address, uint8_t* data, uint8_t length); 
 void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t* idReg, uint8_t* data, uint8_t dlc); 
+void MCP2515_WriteBitMod(uint8_t addr, uint8_t mask, uint8_t val);
 
+//temp
 void tempMCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t SIDH, uint8_t SIDL, 
                                uint8_t EID8, uint8_t EID0, uint8_t* data, uint8_t dlc);
 
@@ -264,6 +334,6 @@ rx_status_t MCP2515_GetRxStatus(void);
 ctrl_status_t MCP2515_GetControlStatus(void); 
 
  
-void MCP_test_function(void);
+void MCP_test_loopback_init(void);
 
 #endif /* SRC_MCP2515_H_ */

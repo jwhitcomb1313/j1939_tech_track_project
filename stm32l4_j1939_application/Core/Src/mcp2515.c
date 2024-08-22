@@ -22,7 +22,7 @@ uint8_t read_error;
 /******************** Prototypes ************************/
 /******************** ********** ************************/
 static void SPI_Tx(uint8_t data); 
-static void SPI_TxBuffer(uint8_t *buffer, uint8_t length); 
+// static void SPI_TxBuffer(uint8_t *buffer, uint8_t length); 
 static uint8_t SPI_Rx(void); 
 static void SPI_RxBuffer(uint8_t *buffer, uint8_t length); 
 
@@ -30,54 +30,12 @@ static void SPI_RxBuffer(uint8_t *buffer, uint8_t length);
 /******************** Function Definitions ***********************/
 /******************** ******************** ***********************/
 
-void MCP_test_function(void)
-{ 
-  
-  // uint8_t instruction = MCP2515_READ;
-  // uint8_t address = MCP2515_CANCTRL; 
-
-  // uint8_t read_error = 0xFF;
-
-
-
-
-  // //step 1: set chip select low  
-  // MCP2515_CS_LOW();
-  
-  // //step 2: tell the chip I want to read a register
-  // HAL_SPI_Transmit(&hspi1, &instruction, 1, SPI_TIMEOUT);
-  // //step 3: tell it the location I want to read
-  // HAL_SPI_Transmit(&hspi1, &address, 1, SPI_TIMEOUT);
-  // //step 4: read the register
-  // read_error = (uint8_t) HAL_SPI_Receive(&hspi1, &read_data, 1, SPI_TIMEOUT);
-
-  // //step 5: set chip select high
-  // MCP2515_CS_HIGH();
-
-  // sprintf(test, "instruction = %x\r\n", (uint8_t)INSTRUCTION_READ); 
-  // uart_serial_print(test, sizeof(test));
-  // memset(test, '\0', sizeof(test)); 
-  // sprintf(test, "address = %x\r\n", address); 
-  // uart_serial_print(test, sizeof(test));
-  // memset(test, '\0', sizeof(test)); 
-  // sprintf(test, "rxerr = %d\r\n", read_error); 
-  // uart_serial_print(test, sizeof(test));
-  // memset(test, '\0', sizeof(test)); 
-  // sprintf(test, "data = %x\r\n\n", read_data); 
-  // uart_serial_print(test, sizeof(test));
-  // memset(test, '\0', sizeof(test)); 
-
-
-  uint8_t read_data = 0xFF;
-  uint8_t temp_data = 0x47;
-  MCP2515_WriteByte(MCP2515_CANCTRL, temp_data); 
-  read_data = MCP2515_ReadByte(MCP2515_CANCTRL); 
-  sprintf(test, "data = %x\r\n\n", read_data); 
-  uart_serial_print(test, sizeof(test));
-  memset(test, '\0', sizeof(test));
-
-
+void MCP_test_loopback_init(void)
+{
+  MCP2515_SetLoopbackMode(); 
 }
+
+
 
 /******************************************************************************/
 /*!
@@ -93,12 +51,10 @@ bool MCP2515_Init(void)
 {
   MCP2515_CS_HIGH();
 
-  if(!MCP2515_SetLoopbackMode())
-  { 
-    return false; 
-  }
-  sprintf(test, "loopback init\r\n"); 
+
+  sprintf(test, "mcp init\r\n"); 
   uart_serial_print(test, sizeof(test));
+  memset(test, '\0', sizeof(test));
   return true; 
 }
 
@@ -114,16 +70,31 @@ bool MCP2515_Init(void)
 /******************************************************************************/
 bool MCP2515_SetConfigurationMode(void)
 {
-  MCP2515_WriteByte(MCP2515_CANCTRL, MODE_CONFIGURATION); 
+  uint8_t retVal = false; 
+  uint8_t mode; 
+  mode = MCP2515_ReadByte(MCP2515_CANCTRL); 
+  mode |= MODE_CONFIGURATION; 
+  MCP2515_WriteByte(MCP2515_CANCTRL, mode); 
 
-  for(int i = 10; i < 10; i ++)
+  for(int i = 0; i < 10; i ++)
   {
     if((MCP2515_ReadByte(MCP2515_CANSTAT) & MCP2515_OPMODE_MASK) == MODE_CONFIGURATION)
     {
-      return true; 
+      sprintf(test, "config mode\r\n"); 
+      uart_serial_print(test, sizeof(test));
+      memset(test, '\0', sizeof(test));
+      retVal = true; 
+      break;
     } 
+    else
+    {
+      mode = MCP2515_ReadByte(MCP2515_CANSTAT); 
+      sprintf(test, "mode = %x\r\n", mode); 
+      uart_serial_print(test, sizeof(test));
+      memset(test, '\0', sizeof(test));
+    }
   }
-  return false;
+  return retVal;
 }
 
 /******************************************************************************/
@@ -138,16 +109,31 @@ bool MCP2515_SetConfigurationMode(void)
 /******************************************************************************/
 bool MCP2515_SetNormalMode(void)
 {
-  MCP2515_WriteByte(MCP2515_CANCTRL, MODE_NORMAL); 
-
-  for(int i = 10; i < 10; i ++)
+  bool retVal = false; 
+  uint8_t mode; 
+  mode = MCP2515_ReadByte(MCP2515_CANCTRL); 
+  mode &= MODE_MASK_NORMAL; 
+  MCP2515_WriteByte(MCP2515_CANCTRL, mode); 
+  
+  for(int i = 0; i < 10; i ++)
   {
     if((MCP2515_ReadByte(MCP2515_CANSTAT) & MCP2515_OPMODE_MASK) == MODE_NORMAL)
     {
-      return true; 
+      sprintf(test, "normal mode\r\n"); 
+      uart_serial_print(test, sizeof(test));
+      memset(test, '\0', sizeof(test));
+      retVal = true; 
+      break; 
+    }
+    else
+    {
+      mode = MCP2515_ReadByte(MCP2515_CANSTAT); 
+      sprintf(test, "mode = %x\r\n", mode); 
+      uart_serial_print(test, sizeof(test));
+      memset(test, '\0', sizeof(test));
     } 
   }
-  return false;
+  return retVal;
 }
 
 /******************************************************************************/
@@ -166,19 +152,28 @@ bool MCP2515_SetLoopbackMode(void)
   bool retVal = false; 
   uint8_t mode = 0; 
 
-  mode = MCP2515_ReadByte(MCP2515_CANSTAT); 
-  sprintf(test, "initial mode = %x\r\n", mode); 
-  uart_serial_print(test, sizeof(test));
-  mode |= MODE_LOOPBACK; 
+  mode = MCP2515_ReadByte(MCP2515_CANSTAT);
+  mode &= MODE_MASK_NORMAL; 
+  mode |= MODE_MASK_LOOPBACK; 
   MCP2515_WriteByte(MCP2515_CANCTRL, mode); 
 
   for(int i = 0; i < 10; i ++)
   {
     if((MCP2515_ReadByte(MCP2515_CANSTAT) & MCP2515_OPMODE_MASK) == MODE_LOOPBACK)
     {
+      mode = MCP2515_ReadByte(MCP2515_CANSTAT); 
+      sprintf(test, "loopback mode"); 
+      uart_serial_print(test, sizeof(test));
       retVal = true; 
       break;
     } 
+    else
+    {
+      mode = MCP2515_ReadByte(MCP2515_CANSTAT); 
+      sprintf(test, "mode = %x\r\n", mode); 
+      uart_serial_print(test, sizeof(test));
+      memset(test, '\0', sizeof(test));
+    }
   }
   return retVal; 
 }
@@ -258,30 +253,15 @@ void MCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t* idReg, uint
 void tempMCP2515_WriteTxBuffer(load_tx_buf_instr_t instruction, uint8_t SIDH, uint8_t SIDL, 
                                uint8_t EID8, uint8_t EID0, uint8_t* data, uint8_t dlc)
 {
-  char buf[30]; 
-
-  sprintf(buf, "SIDL byte = %x\r\n", SIDL); 
-  uart_serial_print(buf, sizeof(buf));
-  memset(buf, '\0', sizeof(buf));
-
-  sprintf(buf, "EID0 byte = %x\r\n", EID0); 
-  uart_serial_print(buf, sizeof(buf));
-  memset(buf, '\0', sizeof(buf));
-
   MCP2515_CS_LOW();
 
-  // SPI_Tx((uint8_t)instruction);
-  SPI_Tx(MCP2515_WRITE);
-  SPI_Tx(MCP2515_TXB0SIDH); 
+  SPI_Tx((uint8_t)instruction);
+  // SPI_Tx(MCP2515_WRITE);
+  // SPI_Tx(MCP2515_TXB0SIDH); 
   SPI_Tx(SIDH); 
-  SPI_Tx(0xC8);
-  // SPI_Tx(SIDL); 
-
+  SPI_Tx(SIDL); 
   SPI_Tx(EID8); 
-
-  SPI_Tx(0xFC);
-  // SPI_Tx(EID0); 
-  
+  SPI_Tx(EID0);
   SPI_Tx(dlc); 
   SPI_TxBuffer(data, dlc);
 
@@ -464,7 +444,7 @@ static void SPI_Tx(uint8_t data)
     @{
 */
 /******************************************************************************/
-static void SPI_TxBuffer(uint8_t *buffer, uint8_t length)
+void SPI_TxBuffer(uint8_t *buffer, uint8_t length)
 {
   HAL_SPI_Transmit(&hspi1, buffer, length, SPI_TIMEOUT);    
 }

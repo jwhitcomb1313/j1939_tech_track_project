@@ -52,8 +52,12 @@ SPI_HandleTypeDef hspi1;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
+/*************** ****************/
 char id_buf[20]; 
 char data_buf[20];
+
+/*************** ****************/
+
 
 /* USER CODE END PV */
 
@@ -63,15 +67,16 @@ static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
 /* USER CODE BEGIN PFP */
+/*************** ****************/
 
+/*************** ****************/
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
- 
-  char start[] = "**hello hell**\r\n\n"; 
-  char end[] = "**End**\r\n\n"; 
-  char byteBuf[20]; 
+/*************** ****************/
+  
+/*************** ****************/
 /* USER CODE END 0 */
 
 /**
@@ -82,7 +87,9 @@ int main(void)
 {
 
   /* USER CODE BEGIN 1 */
-
+  /*************** ****************/
+  
+  /*************** ****************/
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -91,14 +98,18 @@ int main(void)
   HAL_Init();
 
   /* USER CODE BEGIN Init */
-
+  /*************** ****************/
+  
+  /*************** ****************/
   /* USER CODE END Init */
 
   /* Configure the system clock */
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
+  /*************** ****************/
 
+  /*************** ****************/
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
@@ -106,24 +117,22 @@ int main(void)
   MX_SPI1_Init();
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
-
-
-  uart_serial_print(start, sizeof(start));
-  // canspi_Init(); 
-  MCP_test_function();
+  /*************** ****************/
+  canspi_Init(); 
+  // MCP_test_loopback_init(); 
   // uart_serial_print(end, sizeof(end));
    
-  testRegisterWrite(); 
+  // testRegisterWrite(); 
   // can_msg_t tx_message;  
   // can_ext_id_t tx_id; 
-  // // // uint32_t uId = tx_id.id;
+  // uint32_t uId = tx_id.id;
 
   // // Load ID
   // tx_id.frame.priority = 0; 
   // tx_id.frame.edp = 0;
   // tx_id.frame.dp = 1; 
-  // tx_id.frame.pf = 0x18; 
-  // tx_id.frame.ps = 0xFE; 
+  // tx_id.frame.pf = 0xFF; 
+  // tx_id.frame.ps = 0x01; 
   // tx_id.frame.source_address = 0xFC; 
   // // Load Frame
   // tx_message.frame.canId = tx_id.id; 
@@ -137,45 +146,92 @@ int main(void)
   // tx_message.frame.data6 = 0x6;
   // tx_message.frame.data7 = 0x7;
 
-  can_msg_t rx_message;  
+  // can_msg_t rx_message;  
 
+  // char buf[30];
+  // static uint8_t canMessage[13];
+  // uint8_t readByte = 0; 
   // canspi_TransmitMessage(&tx_message); 
-   
-  // id_reg_t regId; 
-  // uint32_t newId = 0; 
-  // regId.SIDH = 0; 
-  // regId.SIDL = 0; 
-  // regId.EID8 = 0; 
-  // regId.EID0 = 0; 
-
-  // canspi_ConvertIDToReg(uId, &regId); 
-  // canspi_ConvertRegToID(regId, &newId); 
-  // canspi_idCheck(newId); 
-  char buf[30];  
+  /*************** ****************/  
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  HAL_Delay(1000); 
-  if(canspi_ReceiveMessage(&rx_message))
-  {
-    // canspi_CanLoopTest(rx_message); 
-    sprintf(buf, "****** END ******\r\n\r\n"); 
-    uart_serial_print(buf, sizeof(buf));
-    memset(buf, '\0', sizeof(buf));
-  } 
+  /*************** ****************/
   while (1)
-  {
-    // canspi_TransmitMessage(&tx_message); 
+  { 
+    MCP_test_loopback_function(); 
     // if(canspi_ReceiveMessage(&rx_message))
     // {
-    //   canspi_CanLoopTest(rx_message); 
-    //   sprintf(buf, "****** END ******\r\n\r\n"); 
-    //   uart_serial_print(buf, sizeof(buf));
-    //   memset(buf, '\0', sizeof(buf));
+    //   // canspi_CanLoopTest(rx_message); 
+    //   sprintf(buf, "****** PCAN ******\r\n\r\n"); 
+    //   // uart_serial_print(buf, sizeof(buf));
+    //   // memset(buf, '\0', sizeof(buf));
     // } 
+    // canspi_TransmitMessage(&tx_message); 
+    // canspi_ReceiveMessage(&rx_message);
+    // HAL_Delay(1000); 
+    // canMessage[0] = 0xC7;   // SIDH
+    // canMessage[1] = 0xCA;   // SIDL
+    // canMessage[2] = 0xBC;   // EID8
+    // canMessage[3] = 0x33;   // EID0
+    // canMessage[4] = 1;      // DLC
     
-    HAL_Delay(1000); 
+    // canMessage[5] = 0xFF;      // D0-D8
+    // canMessage[6] = 1;
+    // canMessage[7] = 2;
+    // canMessage[8] = 3;
+    // canMessage[9] = 4;
+    // canMessage[10] = 5;
+    // canMessage[11] = 6;
+    // canMessage[12] = 7;
+
+    // MCP2515_WriteByte(0x31, canMessage[0]);
+    // readByte = MCP2515_ReadByte(0x31);
+    // sprintf(buf, "SIDH = %x\r\n", readByte); 
+    // uart_serial_print(buf, sizeof(buf));
+    // memset(buf, '\0', sizeof(buf));
+
+    // MCP2515_WriteByte(0x32, canMessage[1]);
+    // readByte = MCP2515_ReadByte(0x32);
+    // sprintf(buf, "SIDL = %x\r\n", readByte); 
+    // uart_serial_print(buf, sizeof(buf));
+    // memset(buf, '\0', sizeof(buf));
+
+    // MCP2515_WriteByte(0x33, canMessage[2]);
+    // readByte = MCP2515_ReadByte(0x33);
+    // sprintf(buf, "EID8 = %x\r\n", readByte); 
+    // uart_serial_print(buf, sizeof(buf));
+    // memset(buf, '\0', sizeof(buf));
+
+    // MCP2515_WriteByte(0x34, canMessage[3]);
+    // readByte = MCP2515_ReadByte(0x34);
+    // sprintf(buf, "EID0 = %x\r\n", readByte); 
+    // uart_serial_print(buf, sizeof(buf));
+    // memset(buf, '\0', sizeof(buf));
+
+    // MCP2515_WriteByte(0x35, canMessage[4]);
+    // readByte = MCP2515_ReadByte(0x35);
+    // sprintf(buf, "DLC = %x\r\n", readByte); 
+    // uart_serial_print(buf, sizeof(buf));
+    // memset(buf, '\0', sizeof(buf));
+
+    // MCP2515_WriteByte(0x36, canMessage[5]);
+    // readByte = MCP2515_ReadByte(0x36);
+    // sprintf(buf, "D0 = %x\r\n", readByte); 
+    // uart_serial_print(buf, sizeof(buf));
+    // memset(buf, '\0', sizeof(buf));
+
+    // MCP2515_WriteMultipleBytes(0x31, canMessage, 13);
+    // MCP2515_RequestToSend(0x81);
+
+    // canspi_printTxRxErrorReg();
+    // mcp2515_write_baseaddr(0x31, canMessage, 13);
+    // mcp2515_transmit_req(0);
+
+
+
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -282,7 +338,7 @@ static void MX_USART2_UART_Init(void)
 
   /* USER CODE END USART2_Init 1 */
   huart2.Instance = USART2;
-  huart2.Init.BaudRate = 115200;
+  huart2.Init.BaudRate = 9600;
   huart2.Init.WordLength = UART_WORDLENGTH_8B;
   huart2.Init.StopBits = UART_STOPBITS_1;
   huart2.Init.Parity = UART_PARITY_NONE;

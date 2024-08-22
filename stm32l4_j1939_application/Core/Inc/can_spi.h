@@ -13,6 +13,8 @@
 #include <stdbool.h>
 #include "mcp2515.h"
 
+#define MAX_WRITE_BYTES     16U
+
 #define ID_MASK_PRIORITY    0xE0
 #define ID_MASK_EDP         0x10
 #define ID_MASK_DP          0x08
@@ -28,6 +30,15 @@
 #define REG_MASK_PF_LSBLB   0x03 
 
 #define REG_MASK_IDE        0x08
+
+//Click board has a 10MHz crystal
+#define CAN_OSC_FREQUENCY               10000000 
+#define MCP2515_CANCTRL_REQOP_MASK      0xE0
+#define MCP2515_CANCTRL_REQOP_CONFIG    0x80
+#define MCP2515_CNF2_PRSEG_MASK         0x07
+#define MCP2515_CNF2_PHSEG_MASK         0x38
+#define MCP2515_CNF2_BTLMODE            0x80
+#define MCP2515_CNF3_PHSEG_MASK         0x07
 /******************* ********** ***********************/
 /*******************    Enums   ***********************/
 /******************* ********** ***********************/ 
@@ -77,7 +88,9 @@ uint8_t canspi_TransmitMessage(can_msg_t *can_message);
 uint8_t canspi_ReceiveMessage(can_msg_t *can_message); 
 void canspi_ConvertRegToID(id_reg_t regId, uint32_t *canId);
 void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId);
- 
+
+
+
 // Test functions
 void canspi_CanLoopTest(can_msg_t canMsg); 
 void canspi_idCheck(uint32_t canId);
@@ -87,4 +100,7 @@ void canspi_ReadRx1RegisterPrint(void);
 void canspi_ReadRegIdPrint(id_reg_t regId);
 void printRegister(id_reg_t regId); 
 void testRegisterWrite(void);
+void canspi_printTxRxErrorReg(void);
+void test_PrintTXnCtrl(uint8_t value);
+void MCP_test_loopback_function(void);
 #endif /* INC_CAN_SPI_H_ */

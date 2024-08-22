@@ -18,7 +18,7 @@
 
 uint8_t regData[13] = {0x08, 0xC8, 0xFE, 0xFC, 0x08, 0xFF, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
 uint8_t nullData[13];
-
+char buffer[20]; 
 /******************** ********** ************************/
 /******************** Prototypes ************************/
 /******************** ********** ************************/
@@ -41,6 +41,22 @@ void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId);
 /******************************************************************************/
 bool canspi_Init(void)
 {
+    /* Intialize MCP2515, check SPI */
+    // if(!MCP2515_Init())
+    // {
+    //     return false;
+    // }
+        
+    /* Change mode as configuration mode */
+    if(!MCP2515_SetConfigurationMode())
+    {
+        return false;
+    }
+    
+    // MCP2515_WriteByte(0x60, 0x60);
+    // MCP2515_WriteByte(0x70, 0x60);
+
+    //TODO: Need to update the math here to match my register values
     /* 
     * tq = 2 * (brp(0) + 1) / 16000000 = 0.125us
     * tbit = (SYNC_SEG(1 fixed) + PROP_SEG + PS1 + PS2)
@@ -48,20 +64,18 @@ bool canspi_Init(void)
     * 16tq = 2us = 500kbps
     */
     
+    // MCP2515_WriteByte(MCP2515_CANCTRL, 0x80);
     /* 00(SJW 1tq) 000000 */  
-    MCP2515_WriteByte(MCP2515_CNF1, 0x40);
+    MCP2515_WriteByte(MCP2515_CNF1, 0x00);
     
     /* 1 1 100(5tq) 101(6tq) */  
-    MCP2515_WriteByte(MCP2515_CNF2, 0xE5);
+    MCP2515_WriteByte(MCP2515_CNF2, 0xBF);
     
     /* 1 0 000 011(4tq) */  
-    MCP2515_WriteByte(MCP2515_CNF3, 0x83);
+    MCP2515_WriteByte(MCP2515_CNF3, 0x02);   
 
-
-    if(!MCP2515_Init())
-    {
-        return false; 
-    } 
+    MCP2515_WriteByte(MCP2515_CANCTRL, 0x00);
+    MCP2515_SetNormalMode(); 
     return true; 
 }
 uint8_t canspi_MessagesInBuffer(void)
@@ -96,45 +110,43 @@ uint8_t canspi_MessagesInBuffer(void)
 /******************************************************************************/
 uint8_t canspi_TransmitMessage(can_msg_t *can_message)
 {
+    char buf[30]; 
     uint8_t retVal = 0; 
     id_reg_t regId;
-
+    // char buf[20]; 
     regId.SIDH = 0; 
     regId.SIDL = 0; 
     regId.EID8 = 0; 
-    regId.EID0 = 0; 
+    regId.EID0 = 0;  
 
     ctrl_status_t control_status = MCP2515_GetControlStatus(); 
 
     canspi_ConvertIDToReg(can_message->frame.canId, &regId); 
 
-    printRegister(regId); 
     if(control_status.TXB0REQ != 1)
     {
         //Load data into the buffer
-        // MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB0SIDH, &(regId.SIDH), &(can_message->frame.data0), can_message->frame.dlc);
-        tempMCP2515_WriteTxBuffer(MCP2515_LOAD_TXB0SIDH, regId.SIDH, regId.SIDL, regId.EID8, regId.EID0, 
-                                  &(can_message->frame.data0), can_message->frame.dlc); 
-        canspi_ReadTxRegisterPrint(); 
-        // MCP2515_RequestToSend(MCP2515_RTS_TX0);
+        MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB0SIDH, &(regId.SIDH), &(can_message->frame.data0), can_message->frame.dlc); 
+        MCP2515_RequestToSend(MCP2515_RTS_TX0);
         retVal = 1;  
     }
 
-    // if(control_status.TXB1REQ != 1)
-    // {
-    //     //Load data into the buffer
-    //     MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB1SIDH, &regId, &(can_message->frame.data0), can_message->frame.dlc);
-    //     MCP2515_RequestToSend(MCP2515_RTS_TX1);
-    //     retVal = 1; 
-    // }
+    else if(control_status.TXB1REQ != 1)
+    {
+        //Load data into the buffer
+        MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB1SIDH, &(regId.SIDH), &(can_message->frame.data0), can_message->frame.dlc);
+        MCP2515_RequestToSend(MCP2515_RTS_TX1);
+        retVal = 1; 
+    }
 
-    // if(control_status.TXB2REQ != 1)
-    // {
-    //     //Load data into the buffer
-    //     MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB2SIDH, &regId, &(can_message->frame.data0), can_message->frame.dlc);
-    //     MCP2515_RequestToSend(MCP2515_RTS_TX2);
-    //     retVal = 1; 
-    // }
+    else if(control_status.TXB2REQ != 1)
+    {
+        //Load data into the buffer
+        MCP2515_WriteTxBuffer(MCP2515_LOAD_TXB2SIDH, &(regId.SIDH), &(can_message->frame.data0), can_message->frame.dlc);
+        MCP2515_RequestToSend(MCP2515_RTS_TX2);
+        retVal = 1; 
+    }
+
     return retVal;
 }    
 
@@ -155,6 +167,7 @@ uint8_t canspi_ReceiveMessage(can_msg_t *canMsg)
     rx_status_t rxStatus;
     id_reg_t idReg;
     uint32_t idExt;  
+    uint8_t readByte = 0; 
 
     rxStatus = MCP2515_GetRxStatus();
     /* Check receive buffer */
@@ -163,21 +176,58 @@ uint8_t canspi_ReceiveMessage(can_msg_t *canMsg)
         /* finding buffer which has a message */
         if ((rxStatus.rxBuffer == MSG_IN_RXB0)|(rxStatus.rxBuffer == MSG_IN_BOTH_BUFFERS))
         {
-            MCP2515_ReadRxBuffer(MCP2515_READ_RXB0SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
+            // MCP2515_ReadRxBuffer(MCP2515_READ_RXB0SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
+
+            // rxReg.rx_reg_array[0] = MCP2515_ReadByte(0x61); 
+            // rxReg.rx_reg_array[1] = MCP2515_ReadByte(0x62);
+            // rxReg.rx_reg_array[2] = MCP2515_ReadByte(0x63);
+            // rxReg.rx_reg_array[3] = MCP2515_ReadByte(0x64);
+            // rxReg.rx_reg_array[4] = MCP2515_ReadByte(0x65);
+            // rxReg.rx_reg_array[5] = MCP2515_ReadByte(0x66);
+            // rxReg.rx_reg_array[6] = MCP2515_ReadByte(0x67);
+            // rxReg.rx_reg_array[7] = MCP2515_ReadByte(0x68);
+            // rxReg.rx_reg_array[8] = MCP2515_ReadByte(0x69);
+            // rxReg.rx_reg_array[9] = MCP2515_ReadByte(0x6A);
+            // rxReg.rx_reg_array[10] = MCP2515_ReadByte(0x6B);
+            // rxReg.rx_reg_array[11] = MCP2515_ReadByte(0x6C);
+            // rxReg.rx_reg_array[12] = MCP2515_ReadByte(0x6D);
+
+            MCP2515_ReadMultipleBytes(MCP2515_RXB0SIDH, rxReg.rx_reg_array, 13);
+            readByte = MCP2515_ReadByte(MCP2515_CANINTF);
+            //Clear interrupt flag: bit 0
+            readByte &= ~(1);
+            MCP2515_WriteByte(MCP2515_CANINTF, readByte);
         }
         else if (rxStatus.rxBuffer == MSG_IN_RXB1)
         {
-            MCP2515_ReadRxBuffer(MCP2515_READ_RXB1SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
+            // MCP2515_ReadRxBuffer(MCP2515_READ_RXB1SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
+            // rxReg.rx_reg_array[0] = MCP2515_ReadByte(0x71); 
+            // rxReg.rx_reg_array[1] = MCP2515_ReadByte(0x72);
+            // rxReg.rx_reg_array[2] = MCP2515_ReadByte(0x73);
+            // rxReg.rx_reg_array[3] = MCP2515_ReadByte(0x74);
+            // rxReg.rx_reg_array[4] = MCP2515_ReadByte(0x75);
+            // rxReg.rx_reg_array[5] = MCP2515_ReadByte(0x76);
+            // rxReg.rx_reg_array[6] = MCP2515_ReadByte(0x77);
+            // rxReg.rx_reg_array[7] = MCP2515_ReadByte(0x78);
+            // rxReg.rx_reg_array[8] = MCP2515_ReadByte(0x79);
+            // rxReg.rx_reg_array[9] = MCP2515_ReadByte(0x7A);
+            // rxReg.rx_reg_array[10] = MCP2515_ReadByte(0x7B);
+            // rxReg.rx_reg_array[11] = MCP2515_ReadByte(0x7C);
+            // rxReg.rx_reg_array[12] = MCP2515_ReadByte(0x7D);
+            MCP2515_ReadMultipleBytes(MCP2515_RXB1SIDH, rxReg.rx_reg_array, 13);
+            readByte = MCP2515_ReadByte(MCP2515_CANINTF);
+            //Clear interrupt flag: bit 1
+            readByte &= ~(1 << 1);
+            MCP2515_WriteByte(MCP2515_CANINTF, readByte); 
         }
 
-        //todo: remove
-        // MCP2515_ReadRxBuffer(MCP2515_READ_RXB0SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
 
+        canspi_ReadRegIdPrint(idReg);
         idReg.SIDH = rxReg.RXBnSIDH; 
         idReg.SIDL = rxReg.RXBnSIDL; 
         idReg.EID8 = rxReg.RXBnEID8; 
         idReg.EID0 = rxReg.RXBnEID0; 
-        canspi_ReadRegIdPrint(idReg); 
+         
         canspi_ConvertRegToID(idReg, &idExt); 
         canspi_ReadRx0RegisterPrint(); 
         canspi_ReadRx1RegisterPrint(); 
@@ -215,7 +265,7 @@ void canspi_ConvertRegToID(id_reg_t regId, uint32_t *canId)
     can_ext_id_t extId;  
     // Ext ID 28:24
     extId.frame.priority = ((regId.SIDH & ID_MASK_PRIORITY) >> 5); 
-    extId.frame.edp = (regId.SIDH & ID_MASK_EDP >> 4);
+    extId.frame.edp = ((regId.SIDH & ID_MASK_EDP) >> 4);
     extId.frame.dp = ((regId.SIDH & ID_MASK_DP) >> 3);  
 
     // Ext ID 23:16
@@ -257,7 +307,7 @@ void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId)
 
     // SIDL 7:5 
     regId->SIDL |= ((extId.frame.pf & REG_MASK_PF_LSBUB) << 3); 
-    // SIDL 3:3 Set the Ext ID bit high
+    // SIDL 3:3 Always set the Ext ID bit high
     regId->SIDL |= REG_MASK_IDE; 
     // SIDL 2:0 
     regId->SIDL |= ((extId.frame.pf & REG_MASK_PF_LSBLB));
@@ -271,6 +321,31 @@ void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void canspi_CanLoopTest(can_msg_t canMsg)
 {
     char printStr[30]; 
@@ -278,27 +353,23 @@ void canspi_CanLoopTest(can_msg_t canMsg)
     tempId.id = canMsg.frame.canId; 
 
 
-    sprintf(printStr, "**** CAN ID ****\r\n"); 
-    uart_serial_print(printStr, sizeof(printStr));
-    memset(printStr, '\0', sizeof(printStr));
+    // sprintf(printStr, "**** CAN ID ****\r\n"); 
+    // uart_serial_print(printStr, sizeof(printStr));
+    // memset(printStr, '\0', sizeof(printStr));
 
-    sprintf(printStr, "\rpriority = %x\r\n", tempId.frame.priority); 
-    uart_serial_print(printStr, sizeof(printStr));
-    memset(printStr, '\0', sizeof(printStr)); 
+    // sprintf(printStr, "\rpriority = %x\r\n", tempId.frame.priority); 
+    // uart_serial_print(printStr, sizeof(printStr));
+    // memset(printStr, '\0', sizeof(printStr)); 
 
-    sprintf(printStr, "dp = %x\r\n", tempId.frame.dp); 
-    uart_serial_print(printStr, sizeof(printStr));
-    memset(printStr, '\0', sizeof(printStr));
+    // sprintf(printStr, "dp = %x\r\n", tempId.frame.dp); 
+    // uart_serial_print(printStr, sizeof(printStr));
+    // memset(printStr, '\0', sizeof(printStr));
 
-    sprintf(printStr, "edp = %x\r\n", tempId.frame.edp); 
-    uart_serial_print(printStr, sizeof(printStr));
-    memset(printStr, '\0', sizeof(printStr));
+    // sprintf(printStr, "edp = %x\r\n", tempId.frame.edp); 
+    // uart_serial_print(printStr, sizeof(printStr));
+    // memset(printStr, '\0', sizeof(printStr));
 
-    sprintf(printStr, "pf = %x\r\n", tempId.frame.pf); 
-    uart_serial_print(printStr, sizeof(printStr));
-    memset(printStr, '\0', sizeof(printStr));
-
-    sprintf(printStr, "ps = %x\r\n", tempId.frame.ps); 
+    sprintf(printStr, "pgn = %x%x\r\n", tempId.frame.pf, tempId.frame.ps); 
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
 
@@ -347,38 +418,23 @@ void canspi_CanLoopTest(can_msg_t canMsg)
     memset(printStr, '\0', sizeof(printStr));
 }
 
-void canspi_idCheck(uint32_t canId)
+void canspi_printTxRxErrorReg(void)
 {
-    char printStr[30]; 
-    can_ext_id_t tempId;
-    tempId.id = canId; 
+    char printStr[30];  
+    uint8_t readByte; 
+    readByte = MCP2515_ReadByte(MCP2515_EFLG); 
 
-
-    sprintf(printStr, "**** CAN ID ****\r\n"); 
+    sprintf(printStr, "**** Error Registers ****\r\n"); 
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
 
-    sprintf(printStr, "priority = %x\r\n", tempId.frame.priority); 
+    sprintf(printStr, "eflg reg = %x\r\n", readByte); 
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr)); 
 
-    sprintf(printStr, "dp = %x\r\n", tempId.frame.dp); 
-    uart_serial_print(printStr, sizeof(printStr));
-    memset(printStr, '\0', sizeof(printStr));
+    readByte = MCP2515_ReadByte(MCP2515_TXB0CTRL);
 
-    sprintf(printStr, "edp = %x\r\n", tempId.frame.edp); 
-    uart_serial_print(printStr, sizeof(printStr));
-    memset(printStr, '\0', sizeof(printStr));
-
-    sprintf(printStr, "pf = %x\r\n", tempId.frame.pf); 
-    uart_serial_print(printStr, sizeof(printStr));
-    memset(printStr, '\0', sizeof(printStr));
-
-    sprintf(printStr, "ps = %x\r\n", tempId.frame.ps); 
-    uart_serial_print(printStr, sizeof(printStr));
-    memset(printStr, '\0', sizeof(printStr));
-
-    sprintf(printStr, "source address = %x\r\n\n", tempId.frame.source_address); 
+    sprintf(printStr, "TXB0CTRL = %x\r\n", readByte); 
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
 }
@@ -652,3 +708,150 @@ void canspi_ReadRx1RegisterPrint(void)
     uart_serial_print(buf, sizeof(buf));
     memset(buf, '\0', sizeof(buf));
 }
+
+void test_PrintTXnCtrl(uint8_t value)
+{
+    char buf[34]; 
+    uint8_t readByte = 0;  
+
+    if((value >= 0) && (value <= 2))
+    {
+        switch(value)
+        {
+            case 0: 
+                readByte = MCP2515_ReadByte(MCP2515_TXB0CTRL);
+                sprintf(buf, "\rTX0Ctrl = %x\r\n", readByte); 
+                uart_serial_print(buf, sizeof(buf));
+                memset(buf, '\0', sizeof(buf));
+                break;
+            case 1: 
+                readByte = MCP2515_ReadByte(MCP2515_TXB1CTRL);
+                sprintf(buf, "\rTX1Ctrl = %x\r\n", readByte); 
+                uart_serial_print(buf, sizeof(buf));
+                memset(buf, '\0', sizeof(buf));
+                break;
+            case 2: 
+                readByte = MCP2515_ReadByte(MCP2515_TXB2CTRL);
+                sprintf(buf, "\rTX2Ctrl = %x\r\n", readByte); 
+                uart_serial_print(buf, sizeof(buf));
+                memset(buf, '\0', sizeof(buf));
+                break; 
+        }
+    }
+}
+
+void test_print_ID(can_ext_id_t tempId)
+{
+    char printStr[30]; 
+    sprintf(printStr, "**** CAN ID ****\r\n"); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "\rpriority = %x\r\n", tempId.frame.priority); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr)); 
+
+    sprintf(printStr, "dp = %x\r\n", tempId.frame.dp); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "edp = %x\r\n", tempId.frame.edp); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "pf = %x\r\n", tempId.frame.pf); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "ps = %x\r\n", tempId.frame.ps); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    sprintf(printStr, "source address = %x\r\n\n", tempId.frame.source_address); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+}
+
+void MCP_test_loopback_function(void)
+{  
+    char buf[30];
+    static uint8_t canMessage[13];
+
+    can_msg_t rx_message; 
+    can_msg_t tx_message;  
+    can_ext_id_t tx_id; 
+    tx_id.id = 0; 
+
+    // Load ID
+    tx_id.frame.priority = 6; 
+    tx_id.frame.edp = 0;
+    tx_id.frame.dp = 0; 
+    tx_id.frame.pf = 0xFA; 
+    tx_id.frame.ps = 0xBC; 
+    tx_id.frame.source_address = 0x33; 
+    // Load Frame
+    tx_message.frame.canId = tx_id.id; 
+    tx_message.frame.dlc = 8;
+    tx_message.frame.data0 = 0x01; 
+    tx_message.frame.data1 = 0x11; 
+    tx_message.frame.data2 = 0x21;
+    tx_message.frame.data3 = 0x31;
+    tx_message.frame.data4 = 0x41;
+    tx_message.frame.data5 = 0x51;
+    tx_message.frame.data6 = 0x61;
+    tx_message.frame.data7 = 0x71;
+
+    // canMessage[0] = 0x0F;   // SIDH
+    // canMessage[1] = 0xEB;   // SIDL
+    // canMessage[2] = 0x01;   // EID8
+    // canMessage[3] = 0x33;   // EID0
+    // canMessage[4] = 8;      // DLC
+    
+    // canMessage[5] = 0xFF;      // D0-D8
+    // canMessage[6] = 1;
+    // canMessage[7] = 2;
+    // canMessage[8] = 3;
+    // canMessage[9] = 4;
+    // canMessage[10] = 5;
+    // canMessage[11] = 6;
+    // canMessage[12] = 7;
+    
+    // id_reg_t regID = {0xC7, 0xCA, 0xBC, 0x33};
+ 
+    // canspi_ConvertRegToID(regID, &tx_id.id);
+    // test_print_ID(tx_id);
+
+    // canspi_ConvertIDToReg(tx_id.id, &regID); 
+    // canspi_ReadRegIdPrint(regID); 
+
+    canspi_TransmitMessage(&tx_message);
+    HAL_Delay(1000);
+    if(canspi_ReceiveMessage(&rx_message))
+    {
+        canspi_CanLoopTest(rx_message); 
+        // sprintf(buf, "****** PCAN ******\r\n\r\n"); 
+        uart_serial_print(buf, sizeof(buf));
+        memset(buf, '\0', sizeof(buf));
+    } 
+}
+
+// void readRx0Buffer(rx_reg_t rxData)
+// {
+//     uint8_t readByte = 0; 
+
+//     rxData.rx_reg_array[0] = MCP2515_ReadByte(0x60); 
+//     rxData.rx_reg_array[1] = MCP2515_ReadByte(0x61);
+//     rxData.rx_reg_array[2] = MCP2515_ReadByte(0x62);
+//     rxData.rx_reg_array[3] = MCP2515_ReadByte(0x63);
+//     rxData.rx_reg_array[4] = MCP2515_ReadByte(0x64);
+//     rxData.rx_reg_array[5] = MCP2515_ReadByte(0x65);
+//     rxData.rx_reg_array[6] = MCP2515_ReadByte(0x66);
+//     rxData.rx_reg_array[7] = MCP2515_ReadByte(0x67);
+//     rxData.rx_reg_array[8] = MCP2515_ReadByte(0x68);
+//     rxData.rx_reg_array[9] = MCP2515_ReadByte(0x69);
+//     rxData.rx_reg_array[10] = MCP2515_ReadByte(0x6A);
+//     rxData.rx_reg_array[11] = MCP2515_ReadByte(0x6B);
+//     rxData.rx_reg_array[12] = MCP2515_ReadByte(0x6C);
+//     rxData.rx_reg_array[13] = MCP2515_ReadByte(0x6D);
+// }
