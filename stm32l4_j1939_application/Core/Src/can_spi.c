@@ -15,8 +15,7 @@
 #include <stdint.h>
 
 
-
-uint8_t regData[13] = {0x08, 0xC8, 0xFE, 0xFC, 0x08, 0xFF, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
+#define REG_MASK_RX_BUFFER  0x03
 uint8_t nullData[13];
 char buffer[20]; 
 /******************** ********** ************************/
@@ -166,71 +165,42 @@ uint8_t canspi_ReceiveMessage(can_msg_t *canMsg)
     rx_reg_t rxReg;
     rx_status_t rxStatus;
     id_reg_t idReg;
-    uint32_t idExt;  
-    uint8_t readByte = 0; 
+    uint32_t idExt; 
+    // J1939_message_id_t message_id;
+    // J1939_message_t message; 
+    char buf[30]; 
+
+    uint8_t bufferByte = (REG_MASK_RX_BUFFER & MCP2515_ReadByte(MCP2515_CANINTF));
+    // bufferByte &= REG_MASK_RX_BUFFER;
 
     rxStatus = MCP2515_GetRxStatus();
     /* Check receive buffer */
     if (rxStatus.rxBuffer != 0)
     {
+         
+        //remove after debug
+        // sprintf(buf, "CANINTF = %x\r\n", bufferByte); 
+        // uart_serial_print(buf, sizeof(buf));
+        // memset(buf, '\0', sizeof(buf));
+
         /* finding buffer which has a message */
-        if ((rxStatus.rxBuffer == MSG_IN_RXB0)|(rxStatus.rxBuffer == MSG_IN_BOTH_BUFFERS))
+        //if ((rxStatus.rxBuffer == MSG_IN_RXB0)|(rxStatus.rxBuffer == MSG_IN_BOTH_BUFFERS))
+        if((bufferByte == MSG_IN_RXB0) | (bufferByte == MSG_IN_BOTH_BUFFERS))
         {
-            // MCP2515_ReadRxBuffer(MCP2515_READ_RXB0SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
-
-            // rxReg.rx_reg_array[0] = MCP2515_ReadByte(0x61); 
-            // rxReg.rx_reg_array[1] = MCP2515_ReadByte(0x62);
-            // rxReg.rx_reg_array[2] = MCP2515_ReadByte(0x63);
-            // rxReg.rx_reg_array[3] = MCP2515_ReadByte(0x64);
-            // rxReg.rx_reg_array[4] = MCP2515_ReadByte(0x65);
-            // rxReg.rx_reg_array[5] = MCP2515_ReadByte(0x66);
-            // rxReg.rx_reg_array[6] = MCP2515_ReadByte(0x67);
-            // rxReg.rx_reg_array[7] = MCP2515_ReadByte(0x68);
-            // rxReg.rx_reg_array[8] = MCP2515_ReadByte(0x69);
-            // rxReg.rx_reg_array[9] = MCP2515_ReadByte(0x6A);
-            // rxReg.rx_reg_array[10] = MCP2515_ReadByte(0x6B);
-            // rxReg.rx_reg_array[11] = MCP2515_ReadByte(0x6C);
-            // rxReg.rx_reg_array[12] = MCP2515_ReadByte(0x6D);
-
-            MCP2515_ReadMultipleBytes(MCP2515_RXB0SIDH, rxReg.rx_reg_array, 13);
-            readByte = MCP2515_ReadByte(MCP2515_CANINTF);
-            //Clear interrupt flag: bit 0
-            readByte &= ~(1);
-            MCP2515_WriteByte(MCP2515_CANINTF, readByte);
+            canspi_readRxBuffer(&rxReg, 0);
         }
-        else if (rxStatus.rxBuffer == MSG_IN_RXB1)
+        if (rxStatus.rxBuffer == MSG_IN_RXB1)
         {
-            // MCP2515_ReadRxBuffer(MCP2515_READ_RXB1SIDH, rxReg.rx_reg_array, sizeof(rxReg.rx_reg_array));
-            // rxReg.rx_reg_array[0] = MCP2515_ReadByte(0x71); 
-            // rxReg.rx_reg_array[1] = MCP2515_ReadByte(0x72);
-            // rxReg.rx_reg_array[2] = MCP2515_ReadByte(0x73);
-            // rxReg.rx_reg_array[3] = MCP2515_ReadByte(0x74);
-            // rxReg.rx_reg_array[4] = MCP2515_ReadByte(0x75);
-            // rxReg.rx_reg_array[5] = MCP2515_ReadByte(0x76);
-            // rxReg.rx_reg_array[6] = MCP2515_ReadByte(0x77);
-            // rxReg.rx_reg_array[7] = MCP2515_ReadByte(0x78);
-            // rxReg.rx_reg_array[8] = MCP2515_ReadByte(0x79);
-            // rxReg.rx_reg_array[9] = MCP2515_ReadByte(0x7A);
-            // rxReg.rx_reg_array[10] = MCP2515_ReadByte(0x7B);
-            // rxReg.rx_reg_array[11] = MCP2515_ReadByte(0x7C);
-            // rxReg.rx_reg_array[12] = MCP2515_ReadByte(0x7D);
-            MCP2515_ReadMultipleBytes(MCP2515_RXB1SIDH, rxReg.rx_reg_array, 13);
-            readByte = MCP2515_ReadByte(MCP2515_CANINTF);
-            //Clear interrupt flag: bit 1
-            readByte &= ~(1 << 1);
-            MCP2515_WriteByte(MCP2515_CANINTF, readByte); 
+            canspi_readRxBuffer(&rxReg, 1);
         }
 
-
-        canspi_ReadRegIdPrint(idReg);
         idReg.SIDH = rxReg.RXBnSIDH; 
         idReg.SIDL = rxReg.RXBnSIDL; 
         idReg.EID8 = rxReg.RXBnEID8; 
         idReg.EID0 = rxReg.RXBnEID0; 
          
         canspi_ConvertRegToID(idReg, &idExt); 
-        canspi_ReadRx0RegisterPrint(); 
-        canspi_ReadRx1RegisterPrint(); 
+         
         canMsg->frame.canId     = idExt;
         canMsg->frame.dlc       = rxReg.RXBnDLC;
         canMsg->frame.data0     = rxReg.RXBnD0;
@@ -241,6 +211,10 @@ uint8_t canspi_ReceiveMessage(can_msg_t *canMsg)
         canMsg->frame.data5     = rxReg.RXBnD5;
         canMsg->frame.data6     = rxReg.RXBnD6;
         canMsg->frame.data7     = rxReg.RXBnD7;
+
+        
+        
+
 
         retVal = 1;
     }
@@ -373,7 +347,7 @@ void canspi_CanLoopTest(can_msg_t canMsg)
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
 
-    sprintf(printStr, "source address = %x\r\n\n", tempId.frame.source_address); 
+    sprintf(printStr, "source address = %x\r\n\r\n", tempId.frame.source_address); 
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
 
@@ -831,27 +805,36 @@ void MCP_test_loopback_function(void)
     {
         canspi_CanLoopTest(rx_message); 
         // sprintf(buf, "****** PCAN ******\r\n\r\n"); 
-        uart_serial_print(buf, sizeof(buf));
-        memset(buf, '\0', sizeof(buf));
+        // uart_serial_print(buf, sizeof(buf));
+        // memset(buf, '\0', sizeof(buf));
     } 
 }
 
-// void readRx0Buffer(rx_reg_t rxData)
-// {
-//     uint8_t readByte = 0; 
+void canspi_readRxBuffer(rx_reg_t *rxData, uint8_t regPosition)
+{
+    uint8_t readByte = 0; 
 
-//     rxData.rx_reg_array[0] = MCP2515_ReadByte(0x60); 
-//     rxData.rx_reg_array[1] = MCP2515_ReadByte(0x61);
-//     rxData.rx_reg_array[2] = MCP2515_ReadByte(0x62);
-//     rxData.rx_reg_array[3] = MCP2515_ReadByte(0x63);
-//     rxData.rx_reg_array[4] = MCP2515_ReadByte(0x64);
-//     rxData.rx_reg_array[5] = MCP2515_ReadByte(0x65);
-//     rxData.rx_reg_array[6] = MCP2515_ReadByte(0x66);
-//     rxData.rx_reg_array[7] = MCP2515_ReadByte(0x67);
-//     rxData.rx_reg_array[8] = MCP2515_ReadByte(0x68);
-//     rxData.rx_reg_array[9] = MCP2515_ReadByte(0x69);
-//     rxData.rx_reg_array[10] = MCP2515_ReadByte(0x6A);
-//     rxData.rx_reg_array[11] = MCP2515_ReadByte(0x6B);
-//     rxData.rx_reg_array[12] = MCP2515_ReadByte(0x6C);
-//     rxData.rx_reg_array[13] = MCP2515_ReadByte(0x6D);
-// }
+    if(regPosition == 0)
+    {
+        for(int i = 0; i < 13; i++)
+        {
+            rxData->rx_reg_array[i] = MCP2515_ReadByte(MCP2515_RXB0SIDH + i); 
+        }
+        //Clear interrupt flag: bit 0
+        readByte = MCP2515_ReadByte(MCP2515_CANINTF);
+        readByte &= ~(1 << 0);
+        MCP2515_WriteByte(MCP2515_CANINTF, readByte);
+    }
+
+    else if(regPosition == 1)
+    {
+        for(int i = 0; i < 13; i++)
+        {
+            rxData->rx_reg_array[i] = MCP2515_ReadByte(MCP2515_RXB1SIDH + i); 
+        }
+        //Clear interrupt flag: bit 1
+        readByte = MCP2515_ReadByte(MCP2515_CANINTF);
+        readByte &= ~(1 << 1);
+        MCP2515_WriteByte(MCP2515_CANINTF, readByte);
+    }
+}

@@ -202,14 +202,27 @@ typedef union
   uint8_t ctrl_status;  
 }ctrl_status_t;
 
+// typedef union
+// {
+//   struct
+//   {
+//     unsigned filter     : 3;
+//     unsigned msgType    : 2;
+//     unsigned unusedBit  : 1;
+//     unsigned rxBuffer   : 2;
+//   };
+//   uint8_t ctrl_rx_status;
+// }rx_status_t;
+
 typedef union
 {
   struct
   {
-    unsigned filter     : 3;
-    unsigned msgType    : 2;
-    unsigned unusedBit  : 1;
     unsigned rxBuffer   : 2;
+    unsigned unusedBit  : 1;
+    unsigned msgType    : 2;
+    unsigned filter     : 3;
+    
   };
   uint8_t ctrl_rx_status;
 }rx_status_t;
@@ -304,10 +317,6 @@ typedef struct{
 /******************* ********** ***********************/
 /******************* Prototypes ***********************/
 /******************* ********** ***********************/
-
-//todo: remove after testing
-void SPI_TxBuffer(uint8_t *buffer, uint8_t length); 
-
 
 /**  Init/Mode functions **/
 bool MCP2515_Init(void); 

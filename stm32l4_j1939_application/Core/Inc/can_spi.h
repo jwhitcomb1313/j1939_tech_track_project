@@ -12,9 +12,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "mcp2515.h"
+#include "j1939.h"
 
-#define MAX_WRITE_BYTES     16U
-
+// ID Bit Masks
 #define ID_MASK_PRIORITY    0xE0
 #define ID_MASK_EDP         0x10
 #define ID_MASK_DP          0x08
@@ -26,10 +26,13 @@
 #define ID_MASK_PF_LSBLB    0x03
 
 #define REG_MASK_PF_MSB     0xE0  
+// LSB Upper Byte
 #define REG_MASK_PF_LSBUB   0x1C
+// LSB Lower Byte
 #define REG_MASK_PF_LSBLB   0x03 
-
 #define REG_MASK_IDE        0x08
+
+
 
 //Click board has a 10MHz crystal
 #define CAN_OSC_FREQUENCY               10000000 
@@ -48,9 +51,9 @@ typedef union
     struct 
     {
         unsigned priority       : 3;
-        /********** PGN ***********/
         unsigned edp            : 1; // Reserved bit always 0
         unsigned dp             : 1; 
+        /********** PGN ***********/
         unsigned pf             : 8;
         unsigned ps             : 8; // Destination Address
         /** ******************** **/
@@ -88,7 +91,7 @@ uint8_t canspi_TransmitMessage(can_msg_t *can_message);
 uint8_t canspi_ReceiveMessage(can_msg_t *can_message); 
 void canspi_ConvertRegToID(id_reg_t regId, uint32_t *canId);
 void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId);
-
+void canspi_readRxBuffer(rx_reg_t *rxData, uint8_t regPosition);
 
 
 // Test functions

@@ -22,7 +22,7 @@ uint8_t read_error;
 /******************** Prototypes ************************/
 /******************** ********** ************************/
 static void SPI_Tx(uint8_t data); 
-// static void SPI_TxBuffer(uint8_t *buffer, uint8_t length); 
+static void SPI_TxBuffer(uint8_t *buffer, uint8_t length); 
 static uint8_t SPI_Rx(void); 
 static void SPI_RxBuffer(uint8_t *buffer, uint8_t length); 
 
