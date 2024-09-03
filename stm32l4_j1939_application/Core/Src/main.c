@@ -21,6 +21,7 @@
  #include "uart.h"
  #include "can_spi.h"
  #include "mcp2515.h"
+ #include "j1939.h"
  
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
@@ -160,78 +161,12 @@ int main(void)
   /*************** ****************/
   while (1)
   { 
-    MCP_test_loopback_function(); 
-    // if(canspi_ReceiveMessage(&rx_message))
-    // {
-    //   // canspi_CanLoopTest(rx_message); 
-    //   sprintf(buf, "****** PCAN ******\r\n\r\n"); 
-    //   // uart_serial_print(buf, sizeof(buf));
-    //   // memset(buf, '\0', sizeof(buf));
-    // } 
-    // canspi_TransmitMessage(&tx_message); 
-    // canspi_ReceiveMessage(&rx_message);
-    // HAL_Delay(1000); 
-    // canMessage[0] = 0xC7;   // SIDH
-    // canMessage[1] = 0xCA;   // SIDL
-    // canMessage[2] = 0xBC;   // EID8
-    // canMessage[3] = 0x33;   // EID0
-    // canMessage[4] = 1;      // DLC
-    
-    // canMessage[5] = 0xFF;      // D0-D8
-    // canMessage[6] = 1;
-    // canMessage[7] = 2;
-    // canMessage[8] = 3;
-    // canMessage[9] = 4;
-    // canMessage[10] = 5;
-    // canMessage[11] = 6;
-    // canMessage[12] = 7;
 
-    // MCP2515_WriteByte(0x31, canMessage[0]);
-    // readByte = MCP2515_ReadByte(0x31);
-    // sprintf(buf, "SIDH = %x\r\n", readByte); 
-    // uart_serial_print(buf, sizeof(buf));
-    // memset(buf, '\0', sizeof(buf));
-
-    // MCP2515_WriteByte(0x32, canMessage[1]);
-    // readByte = MCP2515_ReadByte(0x32);
-    // sprintf(buf, "SIDL = %x\r\n", readByte); 
-    // uart_serial_print(buf, sizeof(buf));
-    // memset(buf, '\0', sizeof(buf));
-
-    // MCP2515_WriteByte(0x33, canMessage[2]);
-    // readByte = MCP2515_ReadByte(0x33);
-    // sprintf(buf, "EID8 = %x\r\n", readByte); 
-    // uart_serial_print(buf, sizeof(buf));
-    // memset(buf, '\0', sizeof(buf));
-
-    // MCP2515_WriteByte(0x34, canMessage[3]);
-    // readByte = MCP2515_ReadByte(0x34);
-    // sprintf(buf, "EID0 = %x\r\n", readByte); 
-    // uart_serial_print(buf, sizeof(buf));
-    // memset(buf, '\0', sizeof(buf));
-
-    // MCP2515_WriteByte(0x35, canMessage[4]);
-    // readByte = MCP2515_ReadByte(0x35);
-    // sprintf(buf, "DLC = %x\r\n", readByte); 
-    // uart_serial_print(buf, sizeof(buf));
-    // memset(buf, '\0', sizeof(buf));
-
-    // MCP2515_WriteByte(0x36, canMessage[5]);
-    // readByte = MCP2515_ReadByte(0x36);
-    // sprintf(buf, "D0 = %x\r\n", readByte); 
-    // uart_serial_print(buf, sizeof(buf));
-    // memset(buf, '\0', sizeof(buf));
-
-    // MCP2515_WriteMultipleBytes(0x31, canMessage, 13);
-    // MCP2515_RequestToSend(0x81);
-
-    // canspi_printTxRxErrorReg();
-    // mcp2515_write_baseaddr(0x31, canMessage, 13);
-    // mcp2515_transmit_req(0);
-
-
-
-
+    // MCP_test_loopback_function(); 
+    // test_circ_buf(); 
+    // HAL_Delay(1000);
+    application_MainLoopFunction();
+    /*************** ****************/
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */

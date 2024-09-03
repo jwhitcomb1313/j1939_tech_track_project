@@ -11,10 +11,16 @@
 /******************** ********** ************************/
 /********************* Includes *************************/
 /******************** ********** ************************/
+#include "application.h"
 #include "main.h"
 #include "stm32l432xx.h"
 #include <stdbool.h>
+#include <stdint.h>
+#include <string.h>
+#include <stdio.h>
 #include "can_spi.h"
+#include "uart.h"
+
 
 /******************** ********** ************************/
 /********************** Defines *************************/
@@ -52,7 +58,7 @@ typedef struct
                     - data_buffer[]: This buffer stores the data that needs to be transmitted.\n
                     - message_id: The J1939_message_id_t message ID.\n
                     - length: The length of the data.
-                    - period: The period that this message is transmitted, in ms.
+                    - isMessageNew: bool representing if the data has been read or not
     \ingroup    can
     @{
  */
@@ -61,6 +67,7 @@ typedef struct
     j1939_message_id_t     message_id;
     uint8_t                data_buffer[ J1939_TX_MSG_DATA_SIZE ];
     uint8_t                length;
+    bool isMessageNew;
 } j1939_message_t;
 /*! @} */
 
@@ -74,22 +81,29 @@ typedef struct
  */
 typedef struct 
 {
-    j1939_message_t message[30]; 
-    uint8_t count; 
-    uint8_t head;  
-    bool newMessage; 
+    j1939_message_t message[30];  
+    uint8_t head;
+    uint8_t tail;    
 } j1939_buffer_t;
 
-
+// add rx note
 
 
 
 /******************** ********** ************************/
 /******************** Prototypes ************************/
 /******************** ********** ************************/
-void j1939_AddJ139MessageToTable(can_msg_t canMsg, can_ext_id_t canId);
-bool j1939_GetNewMessage(j1939_message_t *newMessage)
+void j1939_user_init(void);
+void j1939_AddMessageToTable(j1939_message_t newMessage);
+bool j1939_PullMessageFromTable(j1939_message_t *newMessage);
+bool j1939_AnyNewMessages(void);
+void j1939_RxReceivePacket(void); 
+// void j1939_TxSendPacket(app_state_machine_t state);
+void j1939_TxSendPacket(void); 
+bool j1939_PGNCompare(uint16_t pgn1, uint16_t pgn2); 
 
+void test_circ_buf(void);
+void canspi_CanLoopTest(j1939_message_t canMsg);
 
 
 

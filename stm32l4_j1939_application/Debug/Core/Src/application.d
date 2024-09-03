@@ -1,6 +1,7 @@
-Core/Src/can_spi.o: ../Core/Src/can_spi.c ../Core/Inc/can_spi.h \
- ../Core/Inc/j1939.h ../Core/Inc/application.h ../Core/Inc/can_spi.h \
- ../Core/Inc/main.h ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h \
+Core/Src/application.o: ../Core/Src/application.c \
+ ../Core/Inc/application.h ../Core/Inc/can_spi.h ../Core/Inc/j1939.h \
+ ../Core/Inc/application.h ../Core/Inc/main.h \
+ ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h \
  ../Core/Inc/stm32l4xx_hal_conf.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_rcc.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_def.h \
@@ -29,12 +30,11 @@ Core/Src/can_spi.o: ../Core/Src/can_spi.c ../Core/Inc/can_spi.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart.h \
  ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal_uart_ex.h \
  ../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l432xx.h \
- ../Core/Inc/uart.h ../Core/Inc/mcp2515.h ../Core/Inc/main.h \
- ../Core/Inc/mcp2515.h ../Core/Inc/uart.h ../Core/Inc/j1939.h
+ ../Core/Inc/uart.h ../Core/Inc/mcp2515.h ../Core/Inc/j1939.h
+../Core/Inc/application.h:
 ../Core/Inc/can_spi.h:
 ../Core/Inc/j1939.h:
 ../Core/Inc/application.h:
-../Core/Inc/can_spi.h:
 ../Core/Inc/main.h:
 ../Drivers/STM32L4xx_HAL_Driver/Inc/stm32l4xx_hal.h:
 ../Core/Inc/stm32l4xx_hal_conf.h:
@@ -67,7 +67,4 @@ Core/Src/can_spi.o: ../Core/Src/can_spi.c ../Core/Inc/can_spi.h \
 ../Drivers/CMSIS/Device/ST/STM32L4xx/Include/stm32l432xx.h:
 ../Core/Inc/uart.h:
 ../Core/Inc/mcp2515.h:
-../Core/Inc/main.h:
-../Core/Inc/mcp2515.h:
-../Core/Inc/uart.h:
 ../Core/Inc/j1939.h:

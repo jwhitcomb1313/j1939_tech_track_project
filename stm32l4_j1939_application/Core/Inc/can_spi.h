@@ -7,12 +7,12 @@
 
 #ifndef INC_CAN_SPI_H_
 #define INC_CAN_SPI_H_
-
+#include "j1939.h"
 #include "main.h"
 #include <stdint.h>
 #include <stdbool.h>
 #include "mcp2515.h"
-#include "j1939.h"
+
 
 // ID Bit Masks
 #define ID_MASK_PRIORITY    0xE0
@@ -44,7 +44,8 @@
 #define MCP2515_CNF3_PHSEG_MASK         0x07
 /******************* ********** ***********************/
 /*******************    Enums   ***********************/
-/******************* ********** ***********************/ 
+/******************* ********** ***********************/
+
 /** CAN 29 bit extendeded identifier */
 typedef union 
 {
@@ -88,14 +89,14 @@ typedef union
 bool canspi_Init(void); 
 uint8_t canspi_MessagesInBuffer(void); 
 uint8_t canspi_TransmitMessage(can_msg_t *can_message); 
-uint8_t canspi_ReceiveMessage(can_msg_t *can_message); 
+uint8_t canspi_ReceiveMessage(void); 
 void canspi_ConvertRegToID(id_reg_t regId, uint32_t *canId);
 void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId);
 void canspi_readRxBuffer(rx_reg_t *rxData, uint8_t regPosition);
 
 
 // Test functions
-void canspi_CanLoopTest(can_msg_t canMsg); 
+ 
 void canspi_idCheck(uint32_t canId);
 void canspi_ReadTxRegisterPrint(void);
 void canspi_ReadRx0RegisterPrint(void);
