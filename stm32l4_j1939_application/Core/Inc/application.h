@@ -27,7 +27,7 @@
 
 #define STATE_2_PGN     0xFF02
 #define STATE_2_TX_DATA 0x02
-#define STATE_2_RX_DATA 0x01
+#define STATE_2_RX_DATA 0x02
 #define STATE_2_RX_POS  3
 
 #define STATE_3_PGN     0xFF03

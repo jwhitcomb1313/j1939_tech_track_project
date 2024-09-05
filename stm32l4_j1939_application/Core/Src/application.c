@@ -99,7 +99,7 @@ void application_StateMachine(void)
                 if(j1939_PGNCompare(newMessage.message_id.PGN, STATE_2_PGN))
                 {
                     // Determine if the data is valid and in the correct position
-                    if((newMessage.data_buffer[STATE_2_RX_POS] & (0x0F) >> 2) == STATE_2_RX_DATA)
+                    if(((newMessage.data_buffer[STATE_2_RX_POS] & (0x0F)) >> 2) == STATE_2_RX_DATA)
                     {
                         applicationState = APP_STATE_3;
 
