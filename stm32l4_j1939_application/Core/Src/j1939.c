@@ -20,59 +20,53 @@ j1939_buffer_t rxMsgCircBuffer;
  * txPacketList contains all the data that will be sent out on the CAN bus depending on the state. 
  * The main loop will transmit the 'State Not Started' data until the user sends the correct message back
  * then it will progress to the next state.
+ * 
+ * Notation for SPN = (start bit, bit length)
  **/
 j1939_message_t txPacketList[] = 
 {
-    // State Not Started
+    // State Not Started: SPN = (0, 8)
     {.message_id = { .PGN = STATE_0_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
-    // State 1
+    .data_buffer = {STATE_0_TX_DATA, 0x04, 0x08, 0x07, 0x02, 0x08, 0x04, 0x03 } , .length = 8, .isMessageNew = false},
+    // State 1: SPN = (0, 8)
     {.message_id = { .PGN = STATE_1_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
-    // State 2
+    .data_buffer = {STATE_1_TX_DATA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
+    // State 2: SPN = (24, 2)
     {.message_id = { .PGN = STATE_2_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
-    // State 3
+    .data_buffer = {0x00, 0x00, 0x00, STATE_2_TX_DATA, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
+    // State 3: SPN = (24, 16)
     {.message_id = { .PGN = STATE_3_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
-    // State 4
+    .data_buffer = {0x00, 0x00, 0x00, 0x23, 0x10, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
+    // State 4: SPN = (0, 32)
     {.message_id = { .PGN = STATE_4_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
-    // State 5
-    {.message_id = { .PGN = STATE_5_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
-    // State 6
-    {.message_id = { .PGN = STATE_6_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
+    .data_buffer = {0x78, 0x56, 0x34, 0x12, 0x12, 0x34, 0x56, 0x78 } , .length = 8, .isMessageNew = false},
 };
 
 /** 
- * rxPacketArray contains all the data that is expected from the user on the CAN bus depending on the state. 
+ * rxPacketArray contains all the data that is expected from the user on the CAN bus depending on the state.
+ * 
+ * Notation for SPN = (start bit, bit length)
  **/
 j1939_message_t rxPacketList[] = 
 {
-    // State Not Started
+    // State Not Started: SPN = (8, 8)
     {.message_id = { .PGN = STATE_0_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
     .data_buffer = {0x00, 0x05, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
-    // State 1
+    // State 1: SPN = (8, 8)
     {.message_id = { .PGN = STATE_1_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
-    // State 2
+    .data_buffer = {0x00, 0x41, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
+    // State 2 SPN = (26, 2)
     {.message_id = { .PGN = STATE_2_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
-    // State 3
+    .data_buffer = {0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
+    // State 3: SPN = (32, 16)
     {.message_id = { .PGN = STATE_3_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
-    // State 4
+    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x23, 0x10, 0x00 } , .length = 8, .isMessageNew = false},
+    // State 4: SPN = (32, 32)
     {.message_id = { .PGN = STATE_4_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
-    // State 5
-    {.message_id = { .PGN = STATE_5_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
-    // State 6
-    {.message_id = { .PGN = STATE_6_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
+    .data_buffer = {0x00, 0x00, 0x00, 0x00, 0x9B, 0x66, 0x34, 0x12 } , .length = 8, .isMessageNew = false},
 };
+
+
 /******************** ********** ************************/
 /******************** Prototypes ************************/
 /******************** ********** ************************/
@@ -86,6 +80,11 @@ void j1939_user_init(void)
 { 
     rxMsgCircBuffer.head = 0; 
     rxMsgCircBuffer.tail = 0; 
+
+    for(int i = 0; i < J1939_MAX_BUFFER_SIZE; i++)
+    {
+        rxMsgCircBuffer.message[i].isMessageNew = false; 
+    }
 }
 
 void j1939_AddMessageToTable(j1939_message_t newMessage)
@@ -113,17 +112,15 @@ bool j1939_PullMessageFromTable(j1939_message_t *storedMessage)
         {
             *storedMessage = rxMsgCircBuffer.message[rxMsgCircBuffer.head]; 
             rxMsgCircBuffer.message[rxMsgCircBuffer.head].isMessageNew = false; 
+            canspi_CanLoopTest(rxMsgCircBuffer.message[rxMsgCircBuffer.head]);
             rxMsgCircBuffer.head++;  
-            
-            canspi_CanLoopTest(rxMsgCircBuffer.message[rxMsgCircBuffer.head]); 
         }
         else
         {
             *storedMessage = rxMsgCircBuffer.message[rxMsgCircBuffer.head]; 
-            rxMsgCircBuffer.message[rxMsgCircBuffer.head].isMessageNew = false; 
-            rxMsgCircBuffer.head = 0;
-
-            canspi_CanLoopTest(rxMsgCircBuffer.message[rxMsgCircBuffer.head]);
+            rxMsgCircBuffer.message[rxMsgCircBuffer.head].isMessageNew = false;
+            canspi_CanLoopTest(rxMsgCircBuffer.message[rxMsgCircBuffer.head]); 
+            rxMsgCircBuffer.head = 0;   
         }
         retVal = true;
     }
@@ -178,6 +175,7 @@ void j1939_RxReceivePacket(void)
 {
     canspi_ReceiveMessage(); 
 }
+
 bool j1939_PGNCompare(uint16_t pgn1, uint16_t pgn2)
 {
     bool retVal = false; 
@@ -220,11 +218,15 @@ void canspi_CanLoopTest(j1939_message_t canMsg)
 {
     char printStr[30]; 
 
+    sprintf(printStr, "**** CAN ID ****\r\n"); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
     sprintf(printStr, "pgn = %x\r\n", canMsg.message_id.PGN); 
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
 
-    sprintf(printStr, "source address = %x\r\n\r\n", canMsg.message_id.source_address); 
+    sprintf(printStr, "source address = %x\r\n", canMsg.message_id.source_address); 
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
 
@@ -264,7 +266,17 @@ void canspi_CanLoopTest(j1939_message_t canMsg)
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
 
-    sprintf(printStr, "data7 = %x\r\n\n", canMsg.data_buffer[7]); 
+    sprintf(printStr, "data7 = %x\r\n\r\n", canMsg.data_buffer[7]); 
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
-}
+
+    unsigned int    data = canMsg.data_buffer[4] << 24; 
+                    data |= (canMsg.data_buffer[5] << 16); 
+                    data |= (canMsg.data_buffer[6] << 8);
+                    data |= (canMsg.data_buffer[7] << 0);
+
+    sprintf(printStr, "Data base 10 = %u\r\n\r\n", data); 
+    uart_serial_print(printStr, sizeof(printStr));
+    memset(printStr, '\0', sizeof(printStr));
+
+    }

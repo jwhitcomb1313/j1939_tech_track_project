@@ -1,0 +1,17 @@
+../Core/Src/can_spi.c:42:6:canspi_Init	8	static
+../Core/Src/can_spi.c:81:9:canspi_MessagesInBuffer	16	static
+../Core/Src/can_spi.c:111:9:canspi_TransmitMessage	32	static
+../Core/Src/can_spi.c:162:9:canspi_ReceiveMessage	64	static
+../Core/Src/can_spi.c:243:6:canspi_ConvertRegToID	24	static
+../Core/Src/can_spi.c:276:6:canspi_ConvertIDToReg	24	static
+../Core/Src/can_spi.c:332:6:canspi_printTxRxErrorReg	40	static
+../Core/Src/can_spi.c:353:6:canspi_ReadTxRegisterPrint	48	static
+../Core/Src/can_spi.c:428:6:printRegister	48	static
+../Core/Src/can_spi.c:452:6:canspi_ReadRegIdPrint	72	static
+../Core/Src/can_spi.c:478:6:testRegisterWrite	56	static
+../Core/Src/can_spi.c:543:6:canspi_ReadRx0RegisterPrint	48	static
+../Core/Src/can_spi.c:583:6:canspi_ReadRx1RegisterPrint	48	static
+../Core/Src/can_spi.c:623:6:test_PrintTXnCtrl	56	static
+../Core/Src/can_spi.c:654:6:test_print_ID	48	static
+../Core/Src/can_spi.c:687:6:MCP_test_loopback_function	32	static
+../Core/Src/can_spi.c:718:6:canspi_readRxBuffer	32	static

@@ -1,0 +1,4 @@
+../Core/Src/application.c:26:6:application_MainLoopFunction	3
+../Core/Src/application.c:47:6:application_StateMachine	18
+../Core/Src/application.c:173:21:GetApplicationState	1
+../Core/Src/application.c:178:6:SetApplicationState	1
