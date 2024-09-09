@@ -424,38 +424,38 @@ void application_MainLoopFunction(void)
     if(txPeriodCounter == TX_TRANSMIT_PERIOD)
  800056c:	4b0c      	ldr	r3, [pc, #48]	@ (80005a0 <application_MainLoopFunction+0x40>)
  800056e:	681b      	ldr	r3, [r3, #0]
- 8000570:	f5b3 7faf 	cmp.w	r3, #350	@ 0x15e
- 8000574:	d104      	bne.n	8000580 <application_MainLoopFunction+0x20>
+ 8000570:	f240 123b 	movw	r2, #315	@ 0x13b
+ 8000574:	4293      	cmp	r3, r2
+ 8000576:	d104      	bne.n	8000582 <application_MainLoopFunction+0x22>
     {
         // Send the packet for the current state every 100 ms
         j1939_TxSendPacket(); 
- 8000576:	f000 fd05 	bl	8000f84 <j1939_TxSendPacket>
+ 8000578:	f000 fd04 	bl	8000f84 <j1939_TxSendPacket>
         txPeriodCounter = 0; 
- 800057a:	4b09      	ldr	r3, [pc, #36]	@ (80005a0 <application_MainLoopFunction+0x40>)
- 800057c:	2200      	movs	r2, #0
- 800057e:	601a      	str	r2, [r3, #0]
+ 800057c:	4b08      	ldr	r3, [pc, #32]	@ (80005a0 <application_MainLoopFunction+0x40>)
+ 800057e:	2200      	movs	r2, #0
+ 8000580:	601a      	str	r2, [r3, #0]
     } 
     if(serialPrintCounter == SERIAL_PRINT_PERIOD)
- 8000580:	4b08      	ldr	r3, [pc, #32]	@ (80005a4 <application_MainLoopFunction+0x44>)
- 8000582:	681b      	ldr	r3, [r3, #0]
- 8000584:	f5b3 7f7a 	cmp.w	r3, #1000	@ 0x3e8
- 8000588:	d102      	bne.n	8000590 <application_MainLoopFunction+0x30>
+ 8000582:	4b08      	ldr	r3, [pc, #32]	@ (80005a4 <application_MainLoopFunction+0x44>)
+ 8000584:	681b      	ldr	r3, [r3, #0]
+ 8000586:	f5b3 7f7a 	cmp.w	r3, #1000	@ 0x3e8
+ 800058a:	d102      	bne.n	8000592 <application_MainLoopFunction+0x32>
     {
         serialPrintCounter = 0; 
- 800058a:	4b06      	ldr	r3, [pc, #24]	@ (80005a4 <application_MainLoopFunction+0x44>)
- 800058c:	2200      	movs	r2, #0
- 800058e:	601a      	str	r2, [r3, #0]
+ 800058c:	4b05      	ldr	r3, [pc, #20]	@ (80005a4 <application_MainLoopFunction+0x44>)
+ 800058e:	2200      	movs	r2, #0
+ 8000590:	601a      	str	r2, [r3, #0]
     }
     txPeriodCounter ++;   
- 8000590:	4b03      	ldr	r3, [pc, #12]	@ (80005a0 <application_MainLoopFunction+0x40>)
- 8000592:	681b      	ldr	r3, [r3, #0]
- 8000594:	3301      	adds	r3, #1
- 8000596:	4a02      	ldr	r2, [pc, #8]	@ (80005a0 <application_MainLoopFunction+0x40>)
- 8000598:	6013      	str	r3, [r2, #0]
+ 8000592:	4b03      	ldr	r3, [pc, #12]	@ (80005a0 <application_MainLoopFunction+0x40>)
+ 8000594:	681b      	ldr	r3, [r3, #0]
+ 8000596:	3301      	adds	r3, #1
+ 8000598:	4a01      	ldr	r2, [pc, #4]	@ (80005a0 <application_MainLoopFunction+0x40>)
+ 800059a:	6013      	str	r3, [r2, #0]
 }
- 800059a:	bf00      	nop
- 800059c:	bd80      	pop	{r7, pc}
- 800059e:	bf00      	nop
+ 800059c:	bf00      	nop
+ 800059e:	bd80      	pop	{r7, pc}
  80005a0:	200000cc 	.word	0x200000cc
  80005a4:	200000d0 	.word	0x200000d0
 

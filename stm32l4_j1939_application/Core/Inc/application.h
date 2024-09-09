@@ -11,10 +11,10 @@
 #include "can_spi.h"
 #include "j1939.h"
 
-#define TX_TRANSMIT_PERIOD 350
+#define TX_TRANSMIT_PERIOD 315
 #define SERIAL_PRINT_PERIOD 1000
 
-//tested
+
 #define STATE_0_PGN     0xFF00
 #define STATE_0_TX_DATA 0x05
 #define STATE_0_RX_DATA 0x05
@@ -47,12 +47,7 @@ typedef enum
     APP_STATE_2,
     APP_STATE_3,
     APP_STATE_4,
-    APP_STATE_SUCCESS,
 }app_state_machine_t; 
-
-
-
-
 
 void application_MainLoopFunction(void);
 app_state_machine_t GetApplicationState(void);

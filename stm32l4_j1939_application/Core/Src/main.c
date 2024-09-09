@@ -54,8 +54,6 @@ UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
 /*************** ****************/
-char id_buf[20]; 
-char data_buf[20];
 
 /*************** ****************/
 
@@ -119,40 +117,9 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
   /*************** ****************/
+
   canspi_Init(); 
-  // MCP_test_loopback_init(); 
-  // uart_serial_print(end, sizeof(end));
-   
-  // testRegisterWrite(); 
-  // can_msg_t tx_message;  
-  // can_ext_id_t tx_id; 
-  // uint32_t uId = tx_id.id;
-
-  // // Load ID
-  // tx_id.frame.priority = 0; 
-  // tx_id.frame.edp = 0;
-  // tx_id.frame.dp = 1; 
-  // tx_id.frame.pf = 0xFF; 
-  // tx_id.frame.ps = 0x01; 
-  // tx_id.frame.source_address = 0xFC; 
-  // // Load Frame
-  // tx_message.frame.canId = tx_id.id; 
-  // tx_message.frame.dlc = 8;
-  // tx_message.frame.data0 = 0xFF; 
-  // tx_message.frame.data1 = 0x1; 
-  // tx_message.frame.data2 = 0x2;
-  // tx_message.frame.data3 = 0x3;
-  // tx_message.frame.data4 = 0x5;
-  // tx_message.frame.data5 = 0x5;
-  // tx_message.frame.data6 = 0x6;
-  // tx_message.frame.data7 = 0x7;
-
-  // can_msg_t rx_message;  
-
-  // char buf[30];
-  // static uint8_t canMessage[13];
-  // uint8_t readByte = 0; 
-  // canspi_TransmitMessage(&tx_message); 
+  
   /*************** ****************/  
   /* USER CODE END 2 */
 
@@ -161,10 +128,6 @@ int main(void)
   /*************** ****************/
   while (1)
   { 
-
-    // MCP_test_loopback_function(); 
-    // test_circ_buf(); 
-    // HAL_Delay(1000);
     application_MainLoopFunction();
     /*************** ****************/
     /* USER CODE END WHILE */

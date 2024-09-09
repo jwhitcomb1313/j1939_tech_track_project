@@ -94,17 +94,4 @@ void canspi_ConvertRegToID(id_reg_t regId, uint32_t *canId);
 void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId);
 void canspi_readRxBuffer(rx_reg_t *rxData, uint8_t regPosition);
 
-
-// Test functions
- 
-void canspi_idCheck(uint32_t canId);
-void canspi_ReadTxRegisterPrint(void);
-void canspi_ReadRx0RegisterPrint(void);
-void canspi_ReadRx1RegisterPrint(void); 
-void canspi_ReadRegIdPrint(id_reg_t regId);
-void printRegister(id_reg_t regId); 
-void testRegisterWrite(void);
-void canspi_printTxRxErrorReg(void);
-void test_PrintTXnCtrl(uint8_t value);
-void MCP_test_loopback_function(void);
 #endif /* INC_CAN_SPI_H_ */

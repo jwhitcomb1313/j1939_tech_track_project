@@ -27,13 +27,13 @@ j1939_message_t txPacketList[] =
 {
     // State Not Started: SPN = (0, 8)
     {.message_id = { .PGN = STATE_0_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {STATE_0_TX_DATA, 0x04, 0x08, 0x07, 0x02, 0x08, 0x04, 0x03 } , .length = 8, .isMessageNew = false},
+    .data_buffer = {0x05, 0x04, 0x08, 0x07, 0x02, 0x08, 0x04, 0x03 } , .length = 8, .isMessageNew = false},
     // State 1: SPN = (0, 8)
     {.message_id = { .PGN = STATE_1_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {STATE_1_TX_DATA, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
+    .data_buffer = {0x37, 0x31, 0x33, 0x36, 0x38, 0x31, 0x39, 0x35 } , .length = 8, .isMessageNew = false},
     // State 2: SPN = (24, 2)
     {.message_id = { .PGN = STATE_2_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, STATE_2_TX_DATA, 0x00, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
+    .data_buffer = {0x01, 0x04, 0x03, 0x02, 0x05, 0x0F, 0x0A, 0x02 } , .length = 8, .isMessageNew = false},
     // State 3: SPN = (24, 16)
     {.message_id = { .PGN = STATE_3_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
     .data_buffer = {0x00, 0x00, 0x00, 0x23, 0x10, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
@@ -76,6 +76,16 @@ j1939_message_t rxPacketList[] =
 /******************** ******************** ***********************/
 /******************** Function Definitions ***********************/
 /******************** ******************** ***********************/
+/******************************************************************************/
+/*!
+   \fn      void j1939_user_init(void)
+   \brief   This function inits the j1939 file
+   \param   None
+   \return  None
+
+    @{
+*/
+/******************************************************************************/
 void j1939_user_init(void)
 { 
     rxMsgCircBuffer.head = 0; 
@@ -87,6 +97,16 @@ void j1939_user_init(void)
     }
 }
 
+/******************************************************************************/
+/*!
+   \fn      void j1939_AddMessageToTable(j1939_message_t newMessage)
+   \brief   This function adds j1939 messages to the table
+   \param   j1939_message_t newMessage: j1939 message to add to the table
+   \return  None
+
+    @{
+*/
+/******************************************************************************/
 void j1939_AddMessageToTable(j1939_message_t newMessage)
 {
     if(rxMsgCircBuffer.tail != (J1939_MAX_BUFFER_SIZE - 1))
@@ -103,6 +123,17 @@ void j1939_AddMessageToTable(j1939_message_t newMessage)
     }
 }
 
+/******************************************************************************/
+/*!
+   \fn      bool j1939_PullMessageFromTable(j1939_message_t *storedMessage)
+   \brief   This function pulls a j1939 message from the table
+   \param   j1939_message_t *storedMessage: Pointer to a j1939 message to 
+            store from the table. Table operates with FIFO logic
+   \return  bool retVal: Returns true if a message was pulled and stored
+
+    @{
+*/
+/******************************************************************************/
 bool j1939_PullMessageFromTable(j1939_message_t *storedMessage)
 {
     bool retVal = false; 
@@ -127,6 +158,16 @@ bool j1939_PullMessageFromTable(j1939_message_t *storedMessage)
     return retVal;
 }
 
+/******************************************************************************/
+/*!
+   \fn      bool j1939_AnyNewMessages(void)
+   \brief   This function checks for new messages in the buffer
+   \param   None.
+   \return  bool retVal: Returns true if there are any messages in the buffer
+
+    @{
+*/
+/******************************************************************************/
 bool j1939_AnyNewMessages(void)
 {
     bool retVal = false; 
@@ -142,6 +183,17 @@ bool j1939_AnyNewMessages(void)
     return retVal; 
 }
 
+/******************************************************************************/
+/*!
+   \fn      void j1939_TxSendPacket(void)
+   \brief   This function will send out a j1939 message based on the
+            current state of the state machine. 
+   \param   None.
+   \return  None. 
+
+    @{
+*/
+/******************************************************************************/
 void j1939_TxSendPacket(void)
 {
     can_msg_t canMsg; 
@@ -171,11 +223,32 @@ void j1939_TxSendPacket(void)
     canspi_TransmitMessage(&canMsg);
 }
 
+/******************************************************************************/
+/*!
+   \fn      void j1939_RxReceivePacket(void)
+   \brief   This is a wrapper function for canspi_ReceiveMessage() 
+   \param   None.
+   \return  None. 
+
+    @{
+*/
+/******************************************************************************/
 void j1939_RxReceivePacket(void)
 {
     canspi_ReceiveMessage(); 
 }
 
+/******************************************************************************/
+/*!
+   \fn      bool j1939_PGNCompare(uint16_t pgn1, uint16_t pgn2)
+   \brief   This function compares two PGNs 
+   \param   uint16_t pgn1
+   \param   uint16_t pgn2
+   \return  bool retVal: Returns true if they are the same value 
+
+    @{
+*/
+/******************************************************************************/
 bool j1939_PGNCompare(uint16_t pgn1, uint16_t pgn2)
 {
     bool retVal = false; 
@@ -186,34 +259,6 @@ bool j1939_PGNCompare(uint16_t pgn1, uint16_t pgn2)
     return retVal; 
 }
 
-
-
-
-void test_circ_buf(void)
-{
-    char buf[30]; 
-    // bool newMessage = j1939_AnyNewMessages(); 
-    // sprintf(buf, "newMessage = %s\r\n", newMessage ? "true" : "false" ); 
-    // uart_serial_print(buf, sizeof(buf));
-    // memset(buf, '\0', sizeof(buf));
-    if(j1939_AnyNewMessages())
-    {
-        sprintf(buf, "*** New Message ***\r\n" ); 
-        uart_serial_print(buf, sizeof(buf));
-        memset(buf, '\0', sizeof(buf));
-
-        sprintf(buf, "Head = %u\r\n", rxMsgCircBuffer.head); 
-        uart_serial_print(buf, sizeof(buf));
-        memset(buf, '\0', sizeof(buf));
-
-        sprintf(buf, "Tail = %u\r\n", rxMsgCircBuffer.tail); 
-        uart_serial_print(buf, sizeof(buf));
-        memset(buf, '\0', sizeof(buf));
-        sprintf(buf, "*******************\r\n" ); 
-        uart_serial_print(buf, sizeof(buf));
-        memset(buf, '\0', sizeof(buf));
-    }
-}
 void canspi_CanLoopTest(j1939_message_t canMsg)
 {
     char printStr[30]; 

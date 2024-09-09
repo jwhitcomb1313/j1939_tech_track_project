@@ -23,6 +23,16 @@ void application_StateMachine(void);
 /******************** ******************** ***********************/
 /******************** Function Definitions ***********************/
 /******************** ******************** ***********************/
+/******************************************************************************/
+/*!
+   \fn      void application_MainLoopFunction(void)
+   \brief   This is the main application function that will run in main.c 
+   \param   None. 
+   \return  None.
+
+    @{
+*/
+/******************************************************************************/
 void application_MainLoopFunction(void)
 {
     // Always ready to receive data 
@@ -44,6 +54,16 @@ void application_MainLoopFunction(void)
     txPeriodCounter ++;   
 }
 
+/******************************************************************************/
+/*!
+   \fn      void application_StateMachine(void)
+   \brief   This function manages the state machine 
+   \param   None. 
+   \return  None.
+
+    @{
+*/
+/******************************************************************************/
 void application_StateMachine(void)
 {
     char buf[30]; 
@@ -170,11 +190,30 @@ void application_StateMachine(void)
     }
 }
 
+/******************************************************************************/
+/*!
+   \fn      app_state_machine_t GetApplicationState(void)
+   \brief   This function gets the global application state
+   \param   None. 
+   \return  app_state_machine_t applicationState
+
+    @{
+*/
+/******************************************************************************/
 app_state_machine_t GetApplicationState(void)
 {
     return applicationState; 
 }
 
+/******************************************************************************/
+/*!
+   \fn      void SetApplicationState(app_state_machine_t state)
+   \brief   This function sets the global application state
+   \param   app_state_machine_t state: State to set applicationState to 
+   \return  None.
+    @{
+*/
+/******************************************************************************/
 void SetApplicationState(app_state_machine_t state)
 {
     applicationState = state; 
