@@ -36,10 +36,10 @@ j1939_message_t txPacketList[] =
     .data_buffer = {0x01, 0x04, 0x03, 0x02, 0x05, 0x0F, 0x0A, 0x02 } , .length = 8, .isMessageNew = false},
     // State 3: SPN = (24, 16)
     {.message_id = { .PGN = STATE_3_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x00, 0x00, 0x00, 0x23, 0x10, 0x00, 0x00, 0x00 } , .length = 8, .isMessageNew = false},
+    .data_buffer = {0x44, 0x02, 0x62, 0x23, 0x10, 0x86, 0x34, 0x19 } , .length = 8, .isMessageNew = false},
     // State 4: SPN = (0, 32)
     {.message_id = { .PGN = STATE_4_PGN, .destination_address = 0x00, .source_address = 0x33, .priority = 6 }, 
-    .data_buffer = {0x78, 0x56, 0x34, 0x12, 0x12, 0x34, 0x56, 0x78 } , .length = 8, .isMessageNew = false},
+    .data_buffer = {0x78, 0x56, 0x34, 0x12, 0x14, 0x93, 0x52, 0x85 } , .length = 8, .isMessageNew = false},
 };
 
 /** 
@@ -262,14 +262,14 @@ bool j1939_PGNCompare(uint16_t pgn1, uint16_t pgn2)
 void canspi_CanLoopTest(j1939_message_t canMsg)
 {
     char printStr[30]; 
-
+    char buf[30]; 
     sprintf(printStr, "**** CAN ID ****\r\n"); 
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
 
-    sprintf(printStr, "pgn = %x\r\n", canMsg.message_id.PGN); 
-    uart_serial_print(printStr, sizeof(printStr));
-    memset(printStr, '\0', sizeof(printStr));
+    sprintf(buf, "pgn = %x\r\n", canMsg.message_id.PGN); 
+    uart_serial_print(buf, sizeof(buf));
+    memset(buf, '\0', sizeof(buf));
 
     sprintf(printStr, "source address = %x\r\n", canMsg.message_id.source_address); 
     uart_serial_print(printStr, sizeof(printStr));

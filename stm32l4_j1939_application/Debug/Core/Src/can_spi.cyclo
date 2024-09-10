@@ -4,14 +4,4 @@
 ../Core/Src/can_spi.c:162:9:canspi_ReceiveMessage	4
 ../Core/Src/can_spi.c:243:6:canspi_ConvertRegToID	1
 ../Core/Src/can_spi.c:276:6:canspi_ConvertIDToReg	1
-../Core/Src/can_spi.c:332:6:canspi_printTxRxErrorReg	1
-../Core/Src/can_spi.c:353:6:canspi_ReadTxRegisterPrint	1
-../Core/Src/can_spi.c:428:6:printRegister	1
-../Core/Src/can_spi.c:452:6:canspi_ReadRegIdPrint	1
-../Core/Src/can_spi.c:478:6:testRegisterWrite	1
-../Core/Src/can_spi.c:543:6:canspi_ReadRx0RegisterPrint	1
-../Core/Src/can_spi.c:583:6:canspi_ReadRx1RegisterPrint	1
-../Core/Src/can_spi.c:623:6:test_PrintTXnCtrl	6
-../Core/Src/can_spi.c:654:6:test_print_ID	1
-../Core/Src/can_spi.c:687:6:MCP_test_loopback_function	1
-../Core/Src/can_spi.c:718:6:canspi_readRxBuffer	5
+../Core/Src/can_spi.c:303:6:canspi_readRxBuffer	5

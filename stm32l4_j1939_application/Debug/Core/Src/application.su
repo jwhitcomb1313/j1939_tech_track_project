@@ -1,4 +1,4 @@
-../Core/Src/application.c:26:6:application_MainLoopFunction	8	static
-../Core/Src/application.c:47:6:application_StateMachine	64	static
-../Core/Src/application.c:173:21:GetApplicationState	4	static
-../Core/Src/application.c:178:6:SetApplicationState	16	static
+../Core/Src/application.c:36:6:application_MainLoopFunction	8	static
+../Core/Src/application.c:67:6:application_StateMachine	64	static
+../Core/Src/application.c:201:21:GetApplicationState	4	static
+../Core/Src/application.c:215:6:SetApplicationState	16	static

@@ -180,11 +180,9 @@ void application_StateMachine(void)
                         sprintf(buf, "*******************\r\n" ); 
                         uart_serial_print(buf, sizeof(buf));
                         memset(buf, '\0', sizeof(buf));
+                        applicationState = APP_STATE_NOT_STARTED;
                     } 
                 }
-                break;
-            case APP_STATE_SUCCESS:
-                applicationState = APP_STATE_NOT_STARTED; 
                 break;
         }
     }

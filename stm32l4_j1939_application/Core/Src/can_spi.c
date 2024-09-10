@@ -300,3 +300,31 @@ void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId)
     regId->EID0 = extId.frame.source_address;
 }
 
+void canspi_readRxBuffer(rx_reg_t *rxData, uint8_t regPosition)
+{
+    uint8_t readByte = 0; 
+
+    if(regPosition == 0)
+    {
+        for(int i = 0; i < 13; i++)
+        {
+            rxData->rx_reg_array[i] = MCP2515_ReadByte(MCP2515_RXB0SIDH + i); 
+        }
+        //Clear interrupt flag: bit 0
+        readByte = MCP2515_ReadByte(MCP2515_CANINTF);
+        readByte &= ~(1 << 0);
+        MCP2515_WriteByte(MCP2515_CANINTF, readByte);
+    }
+
+    else if(regPosition == 1)
+    {
+        for(int i = 0; i < 13; i++)
+        {
+            rxData->rx_reg_array[i] = MCP2515_ReadByte(MCP2515_RXB1SIDH + i); 
+        }
+        //Clear interrupt flag: bit 1
+        readByte = MCP2515_ReadByte(MCP2515_CANINTF);
+        readByte &= ~(1 << 1);
+        MCP2515_WriteByte(MCP2515_CANINTF, readByte);
+    }
+}
