@@ -40,13 +40,7 @@ void canspi_ConvertIDToReg(uint32_t canId, id_reg_t *regId);
 */
 /******************************************************************************/
 bool canspi_Init(void)
-{
-    /* Intialize MCP2515, check SPI */
-    // if(!MCP2515_Init())
-    // {
-    //     return false;
-    // }
-        
+{     
     /* Change mode as configuration mode */
     if(!MCP2515_SetConfigurationMode())
     {
@@ -78,25 +72,25 @@ bool canspi_Init(void)
     MCP2515_SetNormalMode(); 
     return true; 
 }
-uint8_t canspi_MessagesInBuffer(void)
-{
-    uint8_t messageCount = 0; 
-    ctrl_status_t status;
-    status = MCP2515_GetControlStatus(); 
+// uint8_t canspi_MessagesInBuffer(void)
+// {
+//     uint8_t messageCount = 0; 
+//     ctrl_status_t status;
+//     status = MCP2515_GetControlStatus(); 
     
-    // Check the first buffer to see if there is data
-    if(status.RX0IF != 0)
-    {
-        messageCount++; 
-    }
-    // Check the second buffer to see if there is data
-    if(status.RX1IF != 0)
-    {
-        messageCount++; 
-    }
+//     // Check the first buffer to see if there is data
+//     if(status.RX0IF != 0)
+//     {
+//         messageCount++; 
+//     }
+//     // Check the second buffer to see if there is data
+//     if(status.RX1IF != 0)
+//     {
+//         messageCount++; 
+//     }
 
-    return messageCount; 
-}
+//     return messageCount; 
+// }
 
 /******************************************************************************/
 /*!

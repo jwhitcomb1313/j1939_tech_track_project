@@ -315,13 +315,13 @@ void canspi_CanLoopTest(j1939_message_t canMsg)
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
 
-    unsigned int    data = canMsg.data_buffer[4] << 24; 
-                    data |= (canMsg.data_buffer[5] << 16); 
-                    data |= (canMsg.data_buffer[6] << 8);
-                    data |= (canMsg.data_buffer[7] << 0);
+    // unsigned int    data = canMsg.data_buffer[4] << 24; 
+    //                 data |= (canMsg.data_buffer[5] << 16); 
+    //                 data |= (canMsg.data_buffer[6] << 8);
+    //                 data |= (canMsg.data_buffer[7] << 0);
 
-    sprintf(printStr, "Data base 10 = %u\r\n\r\n", data); 
-    uart_serial_print(printStr, sizeof(printStr));
-    memset(printStr, '\0', sizeof(printStr));
+    // sprintf(printStr, "Data base 10 = %u\r\n\r\n", data); 
+    // uart_serial_print(printStr, sizeof(printStr));
+    // memset(printStr, '\0', sizeof(printStr));
 
     }

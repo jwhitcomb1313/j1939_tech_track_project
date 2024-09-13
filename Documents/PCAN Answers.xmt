@@ -1,0 +1,16 @@
+; C:\_Projects\CAN_J1939 Tech Track Project\PCAN Answers.xmt
+;   CAN messages saved by PCAN-View v5.1.0.887
+;
+; Columns descriptions:
+; ~~~~~~~~~~~~~~~~~~~~~
+; +Message ID
+; |            +Cycle time in ms (0=manual)
+; |            |  +Data length
+; |            |  |  +Frame type
+; |            |  |  |  +Message data
+; |            |  |  |  |
+18FF00F2h      0  8  D 00h 05h 00h 00h 00h 00h 00h 00h ; State 0
+18FF01F2h      0  8  D 00h 41h 00h 00h 00h 00h 00h 00h ; State 1
+18FF02F2h      0  8  D 00h 00h 00h 08h 00h 00h 00h 00h ; State 2
+18FF03F2h      0  8  D 00h 00h 00h 00h 00h 23h 10h 00h ; State 3
+18FF04F2h      0  8  D 00h 00h 00h 00h 9Bh 66h 34h 12h ; State 4

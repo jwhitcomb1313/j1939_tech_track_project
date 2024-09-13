@@ -87,7 +87,7 @@ typedef union
 /******************* Prototypes ***********************/
 /******************* ********** ***********************/
 bool canspi_Init(void); 
-uint8_t canspi_MessagesInBuffer(void); 
+// uint8_t canspi_MessagesInBuffer(void); 
 uint8_t canspi_TransmitMessage(can_msg_t *can_message); 
 uint8_t canspi_ReceiveMessage(void); 
 void canspi_ConvertRegToID(id_reg_t regId, uint32_t *canId);
