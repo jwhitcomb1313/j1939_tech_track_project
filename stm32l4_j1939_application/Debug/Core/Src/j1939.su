@@ -5,4 +5,4 @@
 ../Core/Src/j1939.c:197:6:j1939_TxSendPacket	56	static
 ../Core/Src/j1939.c:236:6:j1939_RxReceivePacket	8	static
 ../Core/Src/j1939.c:252:6:j1939_PGNCompare	24	static
-../Core/Src/j1939.c:262:6:canspi_CanLoopTest	104	static
+../Core/Src/j1939.c:262:6:canspi_CanLoopTest	96	static
