@@ -23,7 +23,7 @@
 /******************************************************************************/
 void uart_serial_print(char* data, uint8_t size)
 {
-    HAL_UART_Transmit(&huart2, data, size, 100);
+    HAL_UART_Transmit(&huart2,(const uint8_t*) data, size, 100);
 }
 
 // /******************************************************************************/

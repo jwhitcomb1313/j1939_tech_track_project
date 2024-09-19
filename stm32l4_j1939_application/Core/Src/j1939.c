@@ -263,15 +263,20 @@ void canspi_CanLoopTest(j1939_message_t canMsg)
 {
     char printStr[30]; 
     char buf[30]; 
+    char pgn_buf[] = "pgn = "; 
+    char source_buf[] = "source address = "; 
+    memset(printStr, '\0', sizeof(printStr));
     sprintf(printStr, "**** CAN ID ****\r\n"); 
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
 
-    sprintf(buf, "pgn = %x\r\n", canMsg.message_id.PGN); 
+    memset(buf, '\0', sizeof(buf));
+    // sprintf(buf, "pgn = %x\r\n", canMsg.message_id.PGN);
+    sprintf(buf, "%s %x\r\n", pgn_buf, canMsg.message_id.PGN); 
     uart_serial_print(buf, sizeof(buf));
     memset(buf, '\0', sizeof(buf));
 
-    sprintf(printStr, "source address = %x\r\n", canMsg.message_id.source_address); 
+    sprintf(printStr, "source address = %x\r\n\r\n", canMsg.message_id.source_address); 
     uart_serial_print(printStr, sizeof(printStr));
     memset(printStr, '\0', sizeof(printStr));
 
